@@ -4,10 +4,7 @@ import Logo from "../Logo/Logo";
 import NavbarItem from "./NavbarItem";
 import HeaderButton from "./HeaderButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 import Modal from "../Modal/Modal";
-import {useColorScheme} from "@mui/material";
-import {light} from "@mui/material/styles/createPalette";
 
 const Header = () => {
     const [menu, setMenu] = useState(false);
