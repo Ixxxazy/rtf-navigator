@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from './logo.svg'
+import logo from '../../../../public/logo.svg'
 const Logo = () => {
     return (
         <img src={logo} alt='Логотип'/>
