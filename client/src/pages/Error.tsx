@@ -2,9 +2,10 @@ import React from 'react';
 
 const Error = () => {
     return (
-        <h1 className={'text-6xl text-center'}>
-            404
-        </h1>
+        <section className='text-center'>
+            <h1 className='text-6xl'>404</h1>
+            Страница не найдена
+        </section>
     );
 };
 
