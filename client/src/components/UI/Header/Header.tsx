@@ -4,7 +4,10 @@ import Logo from "../Logo/Logo";
 import NavbarItem from "./NavbarItem";
 import HeaderButton from "./HeaderButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import Modal from "../Modal/Modal";
+import {useColorScheme} from "@mui/material";
+import {light} from "@mui/material/styles/createPalette";
 
 const Header = () => {
     const [menu, setMenu] = useState(false);
@@ -32,7 +35,7 @@ const Header = () => {
                         </ul>
                     </nav>
                 </Modal>
-                <HeaderButton onClick={() => setMenu(true)} className={'text-white md:hidden'}><MenuIcon></MenuIcon></HeaderButton>
+                <HeaderButton title="Открыть меню" type='button' onClick={() => setMenu(true)} className={'text-white md:hidden'}><MenuIcon /></HeaderButton>
                 <picture className={'h-full bg-white rounded-full p-2 hidden sm:block'} style={{ width: '3rem' }}>
                     <Logo/>
                 </picture>
