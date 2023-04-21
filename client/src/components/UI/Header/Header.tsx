@@ -20,7 +20,8 @@ const Header = () => {
     const pages: Page[] = [
         new Page('/', 'Главная'),
         new Page('/buildings', 'Институты'),
-        new Page('/about', 'О сайте')]
+        new Page('/about', 'О сайте'),
+        new Page('/login', 'Войти')]
 
     return (
         <header className={'bg-blue-700 dark:bg-neutral-900 shadow'}>
