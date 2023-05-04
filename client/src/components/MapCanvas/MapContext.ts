@@ -4,7 +4,7 @@ import {IState, ITool} from "./Interfaces/Interfaces";
 export const MapContext = createContext<IState>({
     elements: [],
     selected: null,
-    tool: {} as ITool, //TODO REMOVE THIS
+    tool: {} as ITool,
     temporaryElement: null
 });
 export const MapContextDispatch = createContext<React.Dispatch<any>>(null!);

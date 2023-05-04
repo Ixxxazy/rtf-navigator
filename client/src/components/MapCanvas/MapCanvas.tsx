@@ -5,6 +5,7 @@ import {MapContext, MapContextDispatch} from "./MapContext";
 import MapSVG from "./MapSVG/MapSVG";
 import ToolSelector from "./ToolSelector/ToolSelector";
 import {ITool} from "./Interfaces/Interfaces";
+import {DragTool} from "./Tools";
 
 type MapCanvasProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {
     editingAllowed?: boolean
@@ -12,7 +13,7 @@ type MapCanvasProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElemen
 
 const MapCanvas = ({editingAllowed, ...props}: MapCanvasProps) => {
     const [mapState, dispatchStateChange] =
-        useReducer(mapReducer, {elements: [], selected: null, tool: {} as ITool, temporaryElement: null})
+        useReducer(mapReducer, {elements: [], selected: null, tool: new DragTool() as ITool, temporaryElement: null})
     const mapContext = useMemo(() => (mapState), [mapState])
 
     return (
