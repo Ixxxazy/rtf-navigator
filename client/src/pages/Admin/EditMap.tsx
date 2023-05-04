@@ -14,9 +14,7 @@ const EditMap = () => {
                     <Dropdown options={['1','2','3']} />
                 </InputBox>
             </div>
-            <div className='flex'>
-                <MapCanvas className={'max-w-3xl'} editingAllowed={true} />
-            </div>
+            <MapCanvas className={'w-full'} editingAllowed={true} />
         </section>
     );
 };
