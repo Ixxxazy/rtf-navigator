@@ -15,14 +15,14 @@ const ToolSelector = () => {
         new DoorTool(),
         new LinkerTool(),
         new NodeTool(),
+        new WaypointTool(),
         new RoomTool(),
-        new StaircaseTool(),
-        new WaypointTool()];
+        new StaircaseTool()];
     return (
         <div className='flex'>
             {tools.map((el) =>
                 <Button
-                    className={'text-sm' + (el.name === context.tool.name ? ' bg-green-500 dark:bg-green-500 hover:bg-green-500 dark:hover:bg-green-500' : '')}
+                    className={`text-sm ${el.name === context.tool.name && 'bg-green-500 dark:bg-green-500 hover:bg-green-500 dark:hover:bg-green-500'}`}
                     value={el.name} key={el.name}
                     onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                         dispatch({
