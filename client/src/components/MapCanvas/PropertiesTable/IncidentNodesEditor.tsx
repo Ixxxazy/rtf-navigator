@@ -26,7 +26,6 @@ const IncidentNodesEditor = () => {
             })
         }
     }
-
     return (
         <PropertyItem name='Incident nodes'>
             {element.incidentNodes !== undefined &&
