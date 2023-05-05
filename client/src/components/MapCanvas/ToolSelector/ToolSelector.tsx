@@ -29,6 +29,7 @@ const ToolSelector = () => {
                             type: ActionType.SelectedTool,
                             tool: tools.find(tool => tool.name === e.currentTarget.value)
                         })
+                        dispatch({type: ActionType.ChangedTemporaryElement, element: null})
                     }}>
                     <el.icon/>
                 </Button>)}

@@ -19,4 +19,5 @@ export interface ITool {
     name: string,
     icon: OverridableComponent<SvgIconTypeMap> & { muiName: string },
     handleClick: (coordinates: IPoint, context: any, dispatch: Dispatch<any>) => void
+    handleElementClick?: (clickedElement: BaseMapElement, context: any, dispatch: Dispatch<any>) => void;
 }

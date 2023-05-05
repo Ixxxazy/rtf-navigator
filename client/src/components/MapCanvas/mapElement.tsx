@@ -1,6 +1,6 @@
 import React, {useCallback, useContext} from "react";
 import {BaseMapElement, MapElementTypes} from "./MapElements";
-import {MapContextDispatch} from "./MapContext";
+import {MapContext, MapContextDispatch} from "./MapContext";
 import {IPoint} from "./Interfaces/Interfaces";
 import {ActionType} from "./Reducers/MapReducer";
 
@@ -10,6 +10,7 @@ type ComponentProps = React.SVGProps<SVGPathElement> & {
 }
 
 const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
+    const context = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     let d = ''
     let fill = mousePos ? 'gray' : 'none'
@@ -22,6 +23,10 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
     const onPathContextMenu = useCallback(() => {
         dispatch({type: ActionType.Selected, element: element})
     }, [element, dispatch]);
+    const onPathClick = useCallback(() => {
+        if (context.tool.handleElementClick)
+            context.tool.handleElementClick(element, context, dispatch) 
+    }, [context, dispatch, element]);
     switch (element.type) {
         case MapElementTypes.Door:
             props.stroke = 'green'
@@ -41,15 +46,17 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
             l ${(10 * dy/sum)},${(-10 * dx/sum)}`
             break
         case MapElementTypes.Geometry: {
-            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : null}`
+            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}`
             break
         }
         case MapElementTypes.Node: {
+            fill = 'red'
             let coordinates = element.coordinates[0]
             d = `M ${coordinates.x},${coordinates.y} m 5,0 v 5 h -10 v -10 h 10 v 5`
             break
         }
         case MapElementTypes.Waypoint: {
+            fill = 'orange'
             let coordinates = element.coordinates[0]
             d = `M ${coordinates.x - 10},${coordinates.y} a 10,10 0 1,1 20,0 a 10,10 0 1,1 -20,0`
             break
@@ -69,6 +76,6 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
     return (
         <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props} stroke={element.color ?? props.stroke}
               onMouseOver={onPathMouseOver}
-              onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu}/>)
+              onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>)
 };
 export default MapElement
