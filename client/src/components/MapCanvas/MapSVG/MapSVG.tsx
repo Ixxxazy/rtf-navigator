@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import MapElement from "../mapElement";
 import {MapGrid} from "./MapGrid";
-import {IViewBox} from "../Interfaces/Interfaces";
+import {IPoint, IViewBox} from "../Interfaces/Interfaces";
 import {MapContext, MapContextDispatch} from "../MapContext";
 import {ActionType} from "../Reducers/MapReducer";
 import {snapTo} from "../Helpers/Helpers";
@@ -22,7 +22,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     const [grid, setGrid] = useState(editingAllowed)
     const [dragging, setDragging] = useState(false)
     const ref = useRef<SVGSVGElement | null>(null);
-    const [mousePos, setMousePos] = useState({x: 0, y: 0})
+    const [mousePos, setMousePos] = useState<IPoint>({x: 0, y: 0})
 
     useEffect(() => {
         const MapSVG: any = ref.current
@@ -36,7 +36,8 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     }, []);
 
     const handleResize = () => {
-
+        if (ref.current)
+            setScale(viewBox.width / ref.current.clientWidth)
     }
     const handleWheel = (e: React.WheelEvent) => {
         let rect: SVGSVGElement = ref.current!;
@@ -70,7 +71,6 @@ const MapSVG = ({editingAllowed, children}: Props) => {
         setDragging(false);
     }
     const handleMouseDown = () => {
-        console.log(mapState)
         if (mapState.tool.name === 'Drag tool') {
             setDragging(true)
         }
@@ -105,16 +105,16 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     return (
         <div className='w-full flex'>
             <svg viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
-                 ref={ref} onMouseMove={e => handleMouseMove(e)}
-                 className={`w-full max-w-4xl relative border${dragging ? ' cursor-all-scroll' : ''}`}
+                 ref={ref}
+                 className={`w-full max-w-4xl relative border${dragging && ' cursor-all-scroll'}`}
                  style={{aspectRatio: "1.5"}}
-                 onClick={e => handleClick(e)}
+                 onMouseMove={handleMouseMove}
+                 onClick={handleClick}
                  onMouseDown={handleMouseDown}
                  onMouseLeave={handleMouseLeave}
                  onContextMenu={handleRightClick}
                  onMouseUp={handleMouseUp}
-                 onWheel={handleWheel}
-            >
+                 onWheel={handleWheel}>
                 {mapState.elements.map((el) =>
                     <MapElement element={el} key={el.id} stroke='blue' strokeWidth={2.5}></MapElement>)}
                 {mapState.temporaryElement ?
@@ -124,39 +124,39 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                 {(grid) && <MapGrid snap={snap} viewBox={viewBox}/>}
             </svg>
             {editingAllowed &&
-            <PropertiesTable>
-                <PropertiesTableSection label='General properites'>
-                    <PropertyItem name={'Elements count'} value={mapState.elements.length}></PropertyItem>
-                    <PropertyItem name={'Selected tool'} value={mapState.tool.name}/>
-                    <PropertyItem name={'Grid'}>
-                        <input type='checkbox' checked={grid} onChange={e => setGrid(e.target.checked)}/>
-                        <input type='number' value={snap}
-                               onChange={e => setSnap(parseInt(e.target.value))}/>
-                    </PropertyItem>
-                    <PropertyItem name='Offset X'>
-                        <input type='number' className='w-40' value={viewBox.x} step={1} min={0}
-                               onChange={e => setViewBox({
-                                   ...viewBox,
-                                   x: parseFloat(e.target.value)
-                               })}/>
-                    </PropertyItem>
-                    <PropertyItem name='Offset Y'>
-                        <input type='number' className='w-40' value={viewBox.y} step={1} min={0}
-                               onChange={e => setViewBox({
-                                   ...viewBox,
-                                   y: parseFloat(e.target.value)
-                               })}/>
-                    </PropertyItem>
-                    <tr>
-                        <td colSpan={2}>
-                            <button type='button' onClick={() => console.log(mapState.elements)}>Dump
-                                elements
-                            </button>
-                        </td>
-                    </tr>
-                </PropertiesTableSection>
-                {children}
-            </PropertiesTable>}
+                <PropertiesTable>
+                    <PropertiesTableSection label='General properites'>
+                        <PropertyItem name={'Elements count'} value={mapState.elements.length}></PropertyItem>
+                        <PropertyItem name={'Selected tool'} value={mapState.tool.name}/>
+                        <PropertyItem name={'Grid'}>
+                            <input type='checkbox' checked={grid} onChange={e => setGrid(e.target.checked)}/>
+                            <input type='number' value={snap}
+                                   onChange={e => setSnap(parseInt(e.target.value))}/>
+                        </PropertyItem>
+                        <PropertyItem name='Offset X'>
+                            <input type='number' className='w-40' value={viewBox.x} step={1} min={0}
+                                   onChange={e => setViewBox({
+                                       ...viewBox,
+                                       x: parseFloat(e.target.value)
+                                   })}/>
+                        </PropertyItem>
+                        <PropertyItem name='Offset Y'>
+                            <input type='number' className='w-40' value={viewBox.y} step={1} min={0}
+                                   onChange={e => setViewBox({
+                                       ...viewBox,
+                                       y: parseFloat(e.target.value)
+                                   })}/>
+                        </PropertyItem>
+                        <tr>
+                            <td colSpan={2}>
+                                <button type='button' onClick={() => console.log(mapState.elements)}>Dump
+                                    elements
+                                </button>
+                            </td>
+                        </tr>
+                    </PropertiesTableSection>
+                    {children}
+                </PropertiesTable>}
         </div>
     );
 };
