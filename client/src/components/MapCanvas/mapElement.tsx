@@ -12,7 +12,7 @@ type ComponentProps = React.SVGProps<SVGPathElement> & {
 const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
     const dispatch = useContext(MapContextDispatch)
     let d = ''
-    const fill = mousePos ? 'gray' : 'none'
+    let fill = mousePos ? 'gray' : 'none'
     const onPathMouseOver = useCallback(() => {
         dispatch({type: ActionType.Changed, element: {id: element.id, color: 'red'}})
     }, [element.id, dispatch]);
@@ -24,6 +24,20 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
     }, [element, dispatch]);
     switch (element.type) {
         case MapElementTypes.Door:
+            element.color = 'green'
+            const coordinates: IPoint = mousePos ? mousePos : element.coordinates[1]
+            const dx = coordinates.x - element.coordinates[0].x
+            const dy = coordinates.y - element.coordinates[0].y
+            const sum = Math.abs(dx) + Math.abs(dy)
+            d = `
+            M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')} 
+            ${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}
+            M ${element.coordinates[0].x},${element.coordinates[0].y} 
+            l ${(10 * dy/sum)},${(-10 * dx/sum)}
+            l ${dx},${dy}
+            l ${(-20 * dy/sum)},${(20 * dx/sum)} 
+            l ${-dx},${-dy}
+            l ${(10 * dy/sum)},${(-10 * dx/sum)}`
             break
         case MapElementTypes.Geometry: {
             d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : null}`
@@ -40,10 +54,13 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
             break
         }
         case MapElementTypes.Room: {
+            fill = 'green'
             d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : null}`
             break
         }
         case MapElementTypes.Staircase:
+            fill = 'yellow'
+            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : null}`
             break
         default:
             throw Error(`Unknown element type ${element.type}`)
