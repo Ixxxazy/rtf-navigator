@@ -30,6 +30,13 @@ const MapElementProperties = () => {
                                    dispatch({type: ActionType.Changed, element: {id: element.id, name: e.target.value}})}/>
                     </PropertyItem>
                 }
+                {element.staircaseGroup !== undefined &&
+                    <PropertyItem name='Staircase ID'>
+                        <input type='text' value={element.staircaseGroup}
+                               onChange={(e) =>
+                                   dispatch({type: ActionType.Changed, element: {id: element.id, staircaseGroup: e.target.value}})}/>
+                    </PropertyItem>
+                }
             </PropertiesTableSection>
         );
     }
