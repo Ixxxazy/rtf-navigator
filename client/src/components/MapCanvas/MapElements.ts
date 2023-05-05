@@ -47,10 +47,10 @@ export class Waypoint extends Node {
     }
 }
 
-export class Door extends Node {
-    constructor(coordinates: IPoint, incidentNodes?: number[]) {
-        super(coordinates, incidentNodes);
-        this.type = MapElementTypes.Door
+export class Door extends BaseMapElement {
+    constructor(coordinates: IPoint[], incidentNodes?: number[]) {
+        super(MapElementTypes.Door, coordinates);
+        this.incidentNodes = new Set<number>(incidentNodes)
     }
 }
 
