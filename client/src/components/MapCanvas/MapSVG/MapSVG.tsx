@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import MapElement from "../mapElement";
 import {MapGrid} from "./MapGrid";
 import {IPoint, IViewBox} from "../Interfaces/Interfaces";
@@ -8,6 +8,7 @@ import {snapTo} from "../Helpers/Helpers";
 import PropertiesTable from "../PropertiesTable/PropertiesTable";
 import PropertyItem from "../PropertiesTable/PropertyItem";
 import PropertiesTableSection from "../PropertiesTable/PropertiesTableSection";
+import {Geometry} from "../MapElements";
 
 type Props = {
     editingAllowed: boolean,
@@ -26,19 +27,16 @@ const MapSVG = ({editingAllowed, children}: Props) => {
 
     useEffect(() => {
         const MapSVG: any = ref.current
+        const resizeObserver = new ResizeObserver(handleResize);
         if (MapSVG) {
             setViewBox({x: 0, y: 0, width: MapSVG.clientWidth, height: MapSVG.clientHeight})
-            window.addEventListener('resize', handleResize)
+            resizeObserver.observe(MapSVG);
         }
         return () => {
-            window.removeEventListener('resize', handleResize)
+            resizeObserver.disconnect();
         }
     }, []);
 
-    const handleResize = () => {
-        if (ref.current)
-            setScale(viewBox.width / ref.current.clientWidth)
-    }
     const handleWheel = (e: React.WheelEvent) => {
         let rect: SVGSVGElement = ref.current!;
         let width = viewBox.width;
@@ -102,6 +100,11 @@ const MapSVG = ({editingAllowed, children}: Props) => {
         dispatch({type: ActionType.ChangedTemporaryElement, element: null})
     }
 
+    const handleResize = useCallback(() => {
+        if (ref.current)
+            setViewBox({x: 0, y: 0, width: ref.current.clientWidth, height: ref.current.clientHeight})
+    }, []);
+
     return (
         <div className='w-full flex'>
             <svg viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
@@ -117,11 +120,21 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                  onWheel={handleWheel}>
                 {mapState.elements.map((el) =>
                     <MapElement element={el} key={el.id} stroke='blue' strokeWidth={2.5}></MapElement>)}
-                {mapState.temporaryElement ?
+                {mapState.temporaryElement &&
                     <MapElement element={mapState.temporaryElement} mousePos={mousePos}
                                 key={mapState.temporaryElement.id}
                                 pointerEvents='none'
-                                strokeWidth={2.5} stroke='red'></MapElement> : null}
+                                strokeWidth={2.5} stroke='red'></MapElement>}
+                {mapState.selected?.incidentNodes !== undefined &&
+                    Array.from(mapState.selected?.incidentNodes).map(node => {
+                            const incidentNode = mapState.elements.find(el => el.id === node);
+                            if (incidentNode !== undefined)
+                                return (<MapElement key={`${incidentNode.id}${mapState.selected?.id}`} stroke='lightblue' pointerEvents='none'
+                                                    element={new Geometry([incidentNode.coordinates[0], mapState.selected!.coordinates[0]])}/>)
+                        return null
+                        }
+                    )
+                }
                 {(grid) && <MapGrid snap={snap} viewBox={viewBox}/>}
             </svg>
             {editingAllowed &&
@@ -176,10 +189,13 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                         }
                         }/></PropertyItem>
                     </PropertiesTableSection>
-                    {children}
+                    {
+                        children
+                    }
                 </PropertiesTable>}
         </div>
-    );
+    )
+        ;
 };
 
 export default MapSVG;
