@@ -16,11 +16,10 @@ export class StaircaseTool implements ITool {
         else if (shallowCompare(coordinates, context.temporaryElement.coordinates[0])) {
             dispatch({
                 type: ActionType.Added,
-                element: new Staircase(context.temporaryElement.coordinates)
+                element: new Staircase([...context.temporaryElement.coordinates, coordinates])
             })
             dispatch({type: ActionType.ChangedTemporaryElement, element: null})
-
-        } else {
+        } else if (!shallowCompare(coordinates, context.temporaryElement.coordinates.at(-1))){
             dispatch({
                 type: ActionType.ChangedTemporaryElement,
                 element: {
