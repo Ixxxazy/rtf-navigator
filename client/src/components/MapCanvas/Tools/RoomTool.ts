@@ -16,7 +16,7 @@ export class RoomTool implements ITool {
         else if (shallowCompare(coordinates, context.temporaryElement.coordinates[0])) {
             dispatch({
                 type: ActionType.Added,
-                element: new Room(context.temporaryElement.coordinates)
+                element: new Room([...context.temporaryElement.coordinates, coordinates])
             })
             dispatch({type: ActionType.ChangedTemporaryElement, element: null})
         } else {
