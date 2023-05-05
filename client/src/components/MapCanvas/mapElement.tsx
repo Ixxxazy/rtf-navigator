@@ -25,6 +25,7 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
     switch (element.type) {
         case MapElementTypes.Door:
             props.stroke = 'green'
+            fill = 'green'
             const coordinates: IPoint = mousePos ? mousePos : element.coordinates[1]
             const dx = coordinates.x - element.coordinates[0].x
             const dy = coordinates.y - element.coordinates[0].y
@@ -54,7 +55,7 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
             break
         }
         case MapElementTypes.Room: {
-            fill = 'green'
+            fill = 'blue'
             d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : null}`
             break
         }
