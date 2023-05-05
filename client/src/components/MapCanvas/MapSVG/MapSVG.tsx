@@ -155,6 +155,26 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                                 </button>
                             </td>
                         </tr>
+                        <tr>
+                            <td colSpan={2}>
+                                <button type='button'
+                                        onClick={() => console.log(JSON.stringify(mapState.elements))}>Dump JSON
+                                </button>
+                            </td>
+                        </tr>
+                        <PropertyItem name={'Import JSON'}><input onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                for (const el in mapState.elements) {
+                                    dispatch({type: ActionType.Deleted, element: el})
+                                }
+                                console.log(JSON.parse(e.currentTarget.value))
+                                for (const el of JSON.parse(e.currentTarget.value)) {
+                                    dispatch({type: ActionType.Added, element: el})
+                                    console.log(el)
+                                }
+                            }
+                        }
+                        }/></PropertyItem>
                     </PropertiesTableSection>
                     {children}
                 </PropertiesTable>}
