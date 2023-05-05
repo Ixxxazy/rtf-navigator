@@ -24,7 +24,7 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
     }, [element, dispatch]);
     switch (element.type) {
         case MapElementTypes.Door:
-            element.color = 'green'
+            props.stroke = 'green'
             const coordinates: IPoint = mousePos ? mousePos : element.coordinates[1]
             const dx = coordinates.x - element.coordinates[0].x
             const dy = coordinates.y - element.coordinates[0].y
