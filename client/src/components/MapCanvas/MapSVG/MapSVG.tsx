@@ -120,6 +120,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                 {mapState.temporaryElement ?
                     <MapElement element={mapState.temporaryElement} mousePos={mousePos}
                                 key={mapState.temporaryElement.id}
+                                pointerEvents='none'
                                 strokeWidth={2.5} stroke='red'></MapElement> : null}
                 {(grid) && <MapGrid snap={snap} viewBox={viewBox}/>}
             </svg>
