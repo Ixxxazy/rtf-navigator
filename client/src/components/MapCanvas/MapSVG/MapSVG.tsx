@@ -108,7 +108,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
         console.log(ref.current!.getBoundingClientRect().width, refViewBox.current?.width)
         if (ref.current && refViewBox.current)
         {
-            setScale(refViewBox.current?.width / ref.current.clientWidth)
+            setScale(1)
             setViewBox({...refViewBox.current, width: ref.current.clientWidth, height: ref.current.clientHeight})
         }
     }, []);
