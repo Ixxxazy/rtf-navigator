@@ -105,7 +105,6 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     }
 
     const handleResize = useCallback(() => {
-        console.log(ref.current!.getBoundingClientRect().width, refViewBox.current?.width)
         if (ref.current && refViewBox.current)
         {
             setScale(1)
@@ -191,7 +190,6 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                                 }
                                 for (const el of JSON.parse(e.currentTarget.value)) {
                                     dispatch({type: ActionType.Added, element: el})
-                                    console.log(el)
                                 }
                             }
                         }
