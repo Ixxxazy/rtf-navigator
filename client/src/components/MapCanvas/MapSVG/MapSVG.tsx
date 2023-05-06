@@ -4,7 +4,7 @@ import {MapGrid} from "./MapGrid";
 import {IPoint, IViewBox} from "../Interfaces/Interfaces";
 import {MapContext, MapContextDispatch} from "../MapContext";
 import {ActionType} from "../Reducers/MapReducer";
-import {snapTo} from "../Helpers/Helpers";
+import {getElementCenter, snapTo} from "../Helpers/Helpers";
 import PropertiesTable from "../PropertiesTable/PropertiesTable";
 import PropertyItem from "../PropertiesTable/PropertyItem";
 import PropertiesTableSection from "../PropertiesTable/PropertiesTableSection";
@@ -18,6 +18,10 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     const mapState = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     const [viewBox, setViewBox] = useState<IViewBox>({x: 0, y: 0, width: 0, height: 0})
+    const refViewBox = useRef<null | IViewBox>(null)
+    refViewBox.current = viewBox
+
+
     const [scale, setScale] = useState(1)
     const [snap, setSnap] = useState(10)
     const [grid, setGrid] = useState(editingAllowed)
@@ -101,16 +105,20 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     }
 
     const handleResize = useCallback(() => {
-        if (ref.current)
-            setViewBox({x: 0, y: 0, width: ref.current.clientWidth, height: ref.current.clientHeight})
+        console.log(ref.current!.getBoundingClientRect().width, refViewBox.current?.width)
+        if (ref.current && refViewBox.current)
+        {
+            setScale(refViewBox.current?.width / ref.current.clientWidth)
+            setViewBox({...refViewBox.current, width: ref.current.clientWidth, height: ref.current.clientHeight})
+        }
     }, []);
 
     return (
         <div className='w-full flex'>
             <svg viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
                  ref={ref}
-                 className={`w-full max-w-4xl relative border${dragging && ' cursor-all-scroll'}`}
-                 style={{aspectRatio: "1.5"}}
+                 className={`w-full max-w-4xl relative border${dragging ? ' cursor-all-scroll' : ''}`}
+                 style={{aspectRatio: "1.5", minHeight: "70vh"}}
                  onMouseMove={handleMouseMove}
                  onClick={handleClick}
                  onMouseDown={handleMouseDown}
@@ -130,7 +138,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                             const incidentNode = mapState.elements.find(el => el.id === node);
                             if (incidentNode !== undefined)
                                 return (<MapElement key={`${incidentNode.id}${mapState.selected?.id}`} stroke='lightblue' pointerEvents='none'
-                                                    element={new Geometry([incidentNode.coordinates[0], mapState.selected!.coordinates[0]])}/>)
+                                                    element={new Geometry([getElementCenter(incidentNode.coordinates), getElementCenter(mapState.selected!.coordinates)])}/>)
                         return null
                         }
                     )
@@ -142,6 +150,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                     <PropertiesTableSection label='General properites'>
                         <PropertyItem name={'Elements count'} value={mapState.elements.length}></PropertyItem>
                         <PropertyItem name={'Selected tool'} value={mapState.tool.name}/>
+                        <PropertyItem name='Scale' value={scale} />
                         <PropertyItem name={'Grid'}>
                             <input type='checkbox' checked={grid} onChange={e => setGrid(e.target.checked)}/>
                             <input type='number' value={snap}
@@ -180,7 +189,6 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                                 for (const el in mapState.elements) {
                                     dispatch({type: ActionType.Deleted, element: el})
                                 }
-                                console.log(JSON.parse(e.currentTarget.value))
                                 for (const el of JSON.parse(e.currentTarget.value)) {
                                     dispatch({type: ActionType.Added, element: el})
                                     console.log(el)
