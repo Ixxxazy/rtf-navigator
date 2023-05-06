@@ -28,8 +28,19 @@ const MapElementProperties = () => {
                         <input type='text' value={element.name}
                                onChange={(e) =>
                                    dispatch({type: ActionType.Changed, element: {id: element.id, name: e.target.value}})}/>
-                    </PropertyItem>
-                }
+                    </PropertyItem>}
+                {element.description !== undefined &&
+                    <PropertyItem name='Description'>
+                        <input type='text' value={element.description}
+                               onChange={(e) =>
+                                   dispatch({type: ActionType.Changed, element: {id: element.id, description: e.target.value}})}/>
+                    </PropertyItem>}
+                {element.workingHours !== undefined &&
+                    <PropertyItem name='Working hours'>
+                        <input type='text' value={element.workingHours}
+                               onChange={(e) =>
+                                   dispatch({type: ActionType.Changed, element: {id: element.id, workingHours: e.target.value}})}/>
+                    </PropertyItem>}
                 {element.staircaseGroup !== undefined &&
                     <PropertyItem name='Staircase ID'>
                         <input type='text' value={element.staircaseGroup}

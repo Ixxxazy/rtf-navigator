@@ -15,6 +15,8 @@ export class BaseMapElement {
     type: MapElementTypes
     incidentNodes?: Set<number>
     name?: string
+    description?: string
+    workingHours?: string
     staircaseGroup?: number
     color?: string
     constructor(type: MapElementTypes, coordinates: IPoint[]) {
@@ -42,6 +44,8 @@ export class Waypoint extends Node {
         super(coordinates, incidentNodes);
         this.name = name ? name : ''
         this.type = MapElementTypes.Waypoint
+        this.description = ''
+        this.workingHours = ''
     }
 }
 
@@ -65,6 +69,8 @@ export class Room extends BaseMapElement {
         super(MapElementTypes.Room, coordinates);
         this.name = name ? name : '';
         this.incidentNodes = new Set<number>(incidentNodes)
+        this.description = ''
+        this.workingHours = ''
     }
 }
 
