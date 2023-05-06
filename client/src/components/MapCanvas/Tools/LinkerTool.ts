@@ -1,9 +1,9 @@
 import {IPoint, IState, ITool} from "../Interfaces/Interfaces";
-import React, {Dispatch} from "react";
+import {Dispatch} from "react";
 import {ActionType} from "../Reducers/MapReducer";
 import {BaseMapElement, Geometry} from "../MapElements";
 import RouteIcon from '@mui/icons-material/Route';
-import {shallowCompare} from "../Helpers/Helpers";
+import {getElementCenter} from "../Helpers/Helpers";
 
 
 export class LinkerTool implements ITool {
@@ -31,7 +31,7 @@ export class LinkerTool implements ITool {
             }
         } else if (clickedElement.incidentNodes !== undefined) {
             dispatch({type: ActionType.Selected, element: clickedElement})
-            dispatch({type: ActionType.ChangedTemporaryElement, element: new Geometry(clickedElement.coordinates)})
+            dispatch({type: ActionType.ChangedTemporaryElement, element: new Geometry([getElementCenter(clickedElement.coordinates)])})
         }
     }
 }
