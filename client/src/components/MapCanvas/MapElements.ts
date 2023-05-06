@@ -17,7 +17,6 @@ export class BaseMapElement {
     name?: string
     staircaseGroup?: number
     color?: string
-
     constructor(type: MapElementTypes, coordinates: IPoint[]) {
         this.coordinates = coordinates
         this.id = Date.now()
@@ -66,17 +65,6 @@ export class Room extends BaseMapElement {
         super(MapElementTypes.Room, coordinates);
         this.name = name ? name : '';
         this.incidentNodes = new Set<number>(incidentNodes)
-    }
-}
-
-
-export class Brush {
-    name: string
-    icon?: any
-
-    constructor(name: string, icon: any) {
-        this.name = name
-        this.icon = icon
     }
 }
 
