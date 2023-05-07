@@ -75,42 +75,26 @@ export class Room extends BaseMapElement {
 }
 
 export class Building {
-    get name(): string {
-        return this._name;
-    }
-
-    set name(value: string) {
-        this._name = value;
-    }
-
-    private _name: string
+    name: string
     id: number
     floors: Floor[]
 
-    constructor(name: string) {
-        this._name = name
+    constructor(name: string, floors?: Floor[]) {
+        this.name = name
         this.id = Date.now()
-        this.floors = []
+        this.floors = floors ?? [new Floor(1)]
     }
 
 }
 
 export class Floor {
-    get floorNumber(): number {
-        return this._floorNumber;
-    }
-
-    set floorNumber(value: number) {
-        this._floorNumber = value;
-    }
-
-    private _floorNumber: number
+    floorNumber: number
     id: number
     MapElements: BaseMapElement[]
 
-    constructor() {
+    constructor(floorNumber: number) {
         this.id = Date.now()
         this.MapElements = []
-        this._floorNumber = NaN
+        this.floorNumber = floorNumber
     }
 }
