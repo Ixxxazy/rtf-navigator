@@ -51,7 +51,7 @@ const MapElementProperties = () => {
             </PropertiesTableSection>
         );
     }
-    return (<></>);
+    return null;
 };
 
 export default MapElementProperties;
