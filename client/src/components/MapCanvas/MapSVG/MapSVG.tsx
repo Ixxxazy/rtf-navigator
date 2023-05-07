@@ -1,5 +1,4 @@
 import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
-import MapElement from "../mapElement";
 import {MapGrid} from "./MapGrid";
 import {IPoint, IViewBox} from "../Interfaces/Interfaces";
 import {MapContext, MapContextDispatch} from "../MapContext";
@@ -9,6 +8,7 @@ import PropertiesTable from "../PropertiesTable/PropertiesTable";
 import PropertyItem from "../PropertiesTable/PropertyItem";
 import PropertiesTableSection from "../PropertiesTable/PropertiesTableSection";
 import {Geometry} from "../MapElements";
+import MapElement from "../MapElement";
 
 type Props = {
     editingAllowed: boolean,
