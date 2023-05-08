@@ -29,33 +29,30 @@ export default function mapReducer(mapState: IState, action: Action): IState {
                     ...mapState,
                     selected: action.element.id === mapState.selected?.id ? {...mapState.selected, ...action.element} : mapState.selected,
                     elements: mapState.elements.map((el) => {
-                        return (el.id === action.element!.id) ? {...el, ...action.element} : el;
+                        return el.id === action.element!.id ? {...el, ...action.element} : el;
                     })
                 }
             }
             case ActionType.Deleted: {
                 const element = mapState.elements.find(el => el.id === action.element!.id)
+                let elements = mapState.elements
                 if (element?.incidentNodes !== undefined && element.incidentNodes.length > 0) {
-                    return {
-                        ...mapState,
-                        elements: mapState.elements.map(el => {
-                            if (el.incidentNodes !== undefined && el.incidentNodes.length > 0) {
-                                return {...el, incidentNodes: el.incidentNodes.filter(el => el === element.id)}
-                            }
-                            return el
-                        }).filter((el) => el.id !== action.element!.id),
-                        selected: action.element.id === mapState.selected?.id ? null : action.element
-                    }
+                    elements = elements.map(el => {
+                        return el.incidentNodes && el.incidentNodes.length > 0 ? {
+                            ...el,
+                            incidentNodes: el.incidentNodes.filter(el => el !== element.id)
+                        } : el
+                    })
                 }
                 return {
                     ...mapState,
-                    elements: mapState.elements.filter((el) => el.id !== action.element!.id),
+                    elements: elements.filter((el) => el.id !== action.element!.id),
                     selected: action.element.id === mapState.selected?.id ? null : action.element
                 }
             }
             case ActionType.Selected: {
                 const selectedElement = mapState.elements.find(el => el.id === action.element!.id)
-                if (selectedElement !== undefined)
+                if (selectedElement)
                     return {...mapState, selected: selectedElement}
                 throw Error(`Element ${action.element.id} not found!`)
             }
