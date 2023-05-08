@@ -1,6 +1,5 @@
 import {IState, ITool} from "../Interfaces/Interfaces";
 import {BaseMapElement} from "../MapElements";
-import {deleteFromSet} from "../Helpers/Helpers";
 
 type Action = {
     type: ActionType,
@@ -36,12 +35,12 @@ export default function mapReducer(mapState: IState, action: Action): IState {
             }
             case ActionType.Deleted: {
                 const element = mapState.elements.find(el => el.id === action.element!.id)
-                if (element?.incidentNodes !== undefined && element.incidentNodes.size > 0) {
+                if (element?.incidentNodes !== undefined && element.incidentNodes.length > 0) {
                     return {
                         ...mapState,
                         elements: mapState.elements.map(el => {
-                            if (el.incidentNodes !== undefined && el.incidentNodes.size > 0) {
-                                return {...el, incidentNodes: deleteFromSet(el.incidentNodes, element.id)}
+                            if (el.incidentNodes !== undefined && el.incidentNodes.length > 0) {
+                                return {...el, incidentNodes: el.incidentNodes.filter(el => el === element.id)}
                             }
                             return el
                         }).filter((el) => el.id !== action.element!.id),

@@ -13,7 +13,7 @@ export class BaseMapElement {
     id: number
     coordinates: IPoint[]
     type: MapElementTypes
-    incidentNodes?: Set<number>
+    incidentNodes?: number[]
     name?: string
     description?: string
     workingHours?: string
@@ -35,7 +35,7 @@ export class Geometry extends BaseMapElement {
 export class Node extends BaseMapElement {
     constructor(coordinates: IPoint, incidentNodes?: number[]) {
         super(MapElementTypes.Node, [coordinates]);
-        this.incidentNodes = new Set<number>(incidentNodes)
+        this.incidentNodes = incidentNodes ?? []
     }
 }
 
@@ -52,7 +52,7 @@ export class Waypoint extends Node {
 export class Door extends BaseMapElement {
     constructor(coordinates: IPoint[], incidentNodes?: number[]) {
         super(MapElementTypes.Door, coordinates);
-        this.incidentNodes = new Set<number>(incidentNodes)
+        this.incidentNodes = incidentNodes ?? []
     }
 }
 
@@ -60,7 +60,7 @@ export class Staircase extends BaseMapElement {
     constructor(coordinates: IPoint[], name?: string, incidentNodes?: number[]) {
         super(MapElementTypes.Staircase, coordinates);
         this.staircaseGroup = 0
-        this.incidentNodes = new Set<number>(incidentNodes)
+        this.incidentNodes = incidentNodes ?? []
     }
 }
 
@@ -68,7 +68,7 @@ export class Room extends BaseMapElement {
     constructor(coordinates: IPoint[], name?: string, incidentNodes?: number[]) {
         super(MapElementTypes.Room, coordinates);
         this.name = name ? name : '';
-        this.incidentNodes = new Set<number>(incidentNodes)
+        this.incidentNodes = incidentNodes ?? []
         this.description = ''
         this.workingHours = ''
     }

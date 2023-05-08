@@ -3,7 +3,6 @@ import {BaseMapElement} from "../MapElements";
 import {MapContext, MapContextDispatch} from "../MapContext";
 import PropertyItem from "./PropertyItem";
 import {ActionType} from "../Reducers/MapReducer";
-import {deleteFromSet} from "../Helpers/Helpers";
 
 const IncidentNodesEditor = () => {
     const elements = useContext(MapContext).elements
@@ -12,17 +11,17 @@ const IncidentNodesEditor = () => {
 
     const unlinkNodes = (node1id: number, node2id: number) =>
     {
-        let node1 = elements.find(el => el.id === node1id)
-        let node2 = elements.find(el => el.id === node2id)
-        if (node1?.incidentNodes !== undefined && node2?.incidentNodes !== undefined)
+        const node1 = elements.find(el => el.id === node1id)
+        const node2 = elements.find(el => el.id === node2id)
+        if (node1?.incidentNodes && node2?.incidentNodes)
         {
             dispatch({
                 type: ActionType.Changed,
-                element: {id: node1id, incidentNodes: deleteFromSet(node1.incidentNodes, node2id)}
+                element: {id: node1.id, incidentNodes: node1.incidentNodes.filter(el => el !== node2.id)}
             })
             dispatch({
                 type: ActionType.Changed,
-                element: {id: node2id, incidentNodes: deleteFromSet(node2.incidentNodes, node1id)}
+                element: {id: node2.id, incidentNodes: node2.incidentNodes.filter(el => el !== node1.id)}
             })
         }
     }
