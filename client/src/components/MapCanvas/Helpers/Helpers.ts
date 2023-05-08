@@ -9,7 +9,7 @@ export const deleteFromSet = (set: Set<any>, element: any) =>
     newSet.delete(element)
     return newSet
 }
-export const shallowCompare = (obj1: any, obj2: any) =>
+export const shallowEqual = (obj1: any, obj2: any) =>
 {
     return Object.keys(obj1).length === Object.keys(obj2).length &&
     Object.keys(obj1).every(key =>
@@ -20,7 +20,7 @@ export const getElementCenter = (coordinates: IPoint[]): IPoint => {
     let x = 0
     let y = 0
     let n = coordinates.length
-    if (coordinates.length > 1 && shallowCompare(coordinates[0], coordinates.at(-1)))
+    if (coordinates.length > 1 && shallowEqual(coordinates[0], coordinates.at(-1)))
         n -= 1
     for (let i = 0; i < n ; i++) {
         x += coordinates[i].x
