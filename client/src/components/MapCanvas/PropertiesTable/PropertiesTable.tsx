@@ -5,7 +5,7 @@ type Props = React.DetailedHTMLProps<React.TableHTMLAttributes<HTMLTableElement>
 }
 const PropertiesTable = ({children, ...props}: Props) => {
     return (
-        <table className={`border h-fit bg-white text-black`} {...props}>
+        <table className={`border h-fit w-full max-w-xl`} {...props}>
             {children}
         </table>
     );
