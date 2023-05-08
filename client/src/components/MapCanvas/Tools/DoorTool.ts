@@ -3,7 +3,7 @@ import {Dispatch} from "react";
 import {ActionType} from "../Reducers/MapReducer";
 import {Door} from "../MapElements";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
-import {shallowCompare} from "../Helpers/Helpers";
+import {shallowEqual} from "../Helpers/Helpers";
 
 
 export class DoorTool implements ITool {
@@ -13,7 +13,7 @@ export class DoorTool implements ITool {
     handleClick(coordinates: IPoint, context: IState, dispatch: Dispatch<any>) {
         if (context.temporaryElement === null)
             dispatch({type: ActionType.ChangedTemporaryElement, element: new Door([coordinates])})
-        else if (!shallowCompare(coordinates, context.temporaryElement.coordinates[0])) {
+        else if (!shallowEqual(coordinates, context.temporaryElement.coordinates[0])) {
             dispatch({
                 type: ActionType.Added,
                 element: new Door([...context.temporaryElement.coordinates, coordinates])
