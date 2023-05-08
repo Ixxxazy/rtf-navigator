@@ -24,6 +24,9 @@ const MapSVG = ({editingAllowed, children}: Props) => {
 
 
     const [scale, setScale] = useState(1)
+    const refScale = useRef(1)
+    refScale.current = scale
+
     const [snap, setSnap] = useState(10)
     const [grid, setGrid] = useState(editingAllowed)
     const [dragging, setDragging] = useState(false)
@@ -107,10 +110,9 @@ const MapSVG = ({editingAllowed, children}: Props) => {
 
     const handleResize = useCallback(() => {
         if (ref.current && refViewBox.current) {
-            setScale(1)
-            setViewBox({...refViewBox.current, width: ref.current.clientWidth, height: ref.current.clientHeight})
+            setViewBox({...refViewBox.current, width: ref.current.clientWidth * refScale.current, height: ref.current.clientHeight * refScale.current})
         }
-    }, []);
+    }, [refScale]);
 
     return (
         <div className='w-full flex'>
