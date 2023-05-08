@@ -18,6 +18,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     const mapState = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     const [viewBox, setViewBox] = useState<IViewBox>({x: 0, y: 0, width: 0, height: 0})
+    const [guide, setGuide] = useState({path: '', x: 0, y: 0, width: 0})
     const refViewBox = useRef<null | IViewBox>(null)
     refViewBox.current = viewBox
 
@@ -105,8 +106,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     }
 
     const handleResize = useCallback(() => {
-        if (ref.current && refViewBox.current)
-        {
+        if (ref.current && refViewBox.current) {
             setScale(1)
             setViewBox({...refViewBox.current, width: ref.current.clientWidth, height: ref.current.clientHeight})
         }
@@ -125,6 +125,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                  onContextMenu={handleRightClick}
                  onMouseUp={handleMouseUp}
                  onWheel={handleWheel}>
+                {guide.path !== '' && <image href={guide.path} width={guide.width} x={guide.x} y={guide.y} pointerEvents='none'/>}
                 {mapState.elements.map((el) =>
                     <MapElement element={el} key={el.id} stroke='blue' strokeWidth={2.5}></MapElement>)}
                 {mapState.temporaryElement &&
@@ -136,9 +137,10 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                     Array.from(mapState.selected?.incidentNodes).map(node => {
                             const incidentNode = mapState.elements.find(el => el.id === node);
                             if (incidentNode !== undefined)
-                                return (<MapElement key={`${incidentNode.id}${mapState.selected?.id}`} stroke='lightblue' pointerEvents='none'
+                                return (<MapElement key={`${incidentNode.id}${mapState.selected?.id}`} stroke='lightblue'
+                                                    pointerEvents='none'
                                                     element={new Geometry([getElementCenter(incidentNode.coordinates), getElementCenter(mapState.selected!.coordinates)])}/>)
-                        return null
+                            return null
                         }
                     )
                 }
@@ -146,24 +148,22 @@ const MapSVG = ({editingAllowed, children}: Props) => {
             </svg>
             {editingAllowed &&
                 <PropertiesTable>
-                    <PropertiesTableSection label='General properites'>
+                    <PropertiesTableSection label='General properites' hiddenByDefault={true}>
                         <PropertyItem name={'Elements count'} value={mapState.elements.length}></PropertyItem>
                         <PropertyItem name={'Selected tool'} value={mapState.tool.name}/>
-                        <PropertyItem name='Scale' value={scale} />
+                        <PropertyItem name='Scale' value={scale}/>
                         <PropertyItem name={'Grid'}>
                             <input type='checkbox' checked={grid} onChange={e => setGrid(e.target.checked)}/>
                             <input type='number' value={snap}
                                    onChange={e => setSnap(parseInt(e.target.value))}/>
                         </PropertyItem>
-                        <PropertyItem name='Offset X'>
-                            <input type='number' className='w-40' value={viewBox.x} step={1} min={0}
+                        <PropertyItem name='Offset'>
+                            <input type='number' className='w-20' value={viewBox.x} step={1} min={0}
                                    onChange={e => setViewBox({
                                        ...viewBox,
                                        x: parseFloat(e.target.value)
                                    })}/>
-                        </PropertyItem>
-                        <PropertyItem name='Offset Y'>
-                            <input type='number' className='w-40' value={viewBox.y} step={1} min={0}
+                            <input type='number' className='w-20' value={viewBox.y} step={1} min={0}
                                    onChange={e => setViewBox({
                                        ...viewBox,
                                        y: parseFloat(e.target.value)
@@ -194,6 +194,36 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                             }
                         }
                         }/></PropertyItem>
+                    </PropertiesTableSection>
+                    <PropertiesTableSection label='Guide' hiddenByDefault={true}>
+                        <PropertyItem name='Guide'>
+                            <input value='' type="file" onChange={(e) => {
+                                const img = new Image()
+                                img.onload = () => {
+                                    setGuide({...guide, width: img.width, path: img.src})
+                                }
+                                img.src = URL.createObjectURL(e.target.files![0])
+                            }}/>
+                        </PropertyItem>
+                        <PropertyItem name='Offset'>
+                            <input type='number' className='w-20' value={guide.x} step={1} min={0}
+                                   onChange={e => setGuide({
+                                       ...guide,
+                                       x: parseFloat(e.target.value)
+                                   })}/>
+                            <input type='number' className='w-20' value={guide.y} step={1} min={0}
+                                   onChange={e => setGuide({
+                                       ...guide,
+                                       y: parseFloat(e.target.value)
+                                   })}/>
+                        </PropertyItem>
+                        <PropertyItem name='Width'>
+                            <input type='number' className='w-40' value={guide.width} step={1} min={0}
+                                   onChange={e => setGuide({
+                                       ...guide,
+                                       width: parseFloat(e.target.value)
+                                   })}/>
+                        </PropertyItem>
                     </PropertiesTableSection>
                     {
                         children
