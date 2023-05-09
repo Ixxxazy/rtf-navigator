@@ -19,13 +19,6 @@ const BuildingMap = () => {
                 </div>
                 <MapCanvas/>
             </div>
-            <InfoCard className={'md:w-1/3'}>
-                <h1 className={'text-4xl font-thin'}>Номер комнаты</h1>
-                <h2 className={'text-2xl'}>Название комнаты</h2>
-                <h3 className={'text-xl'}>Время работы</h3>
-                <div>Описание: Lorem ipsum dolor sit amet, consectetur adipisicing elit. A amet animi autem consectetur corporis, cumque et facilis impedit iusto laboriosam laborum odio officiis optio quo quod, sequi velit voluptas voluptatibus!</div>
-                <Button className={'w-full mt-3'}>Построить маршрут</Button>
-            </InfoCard>
         </div>
     );
 
