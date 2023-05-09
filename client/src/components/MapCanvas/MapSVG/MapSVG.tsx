@@ -3,12 +3,11 @@ import {MapGrid} from "./MapGrid";
 import {IPoint, IViewBox} from "../Interfaces/Interfaces";
 import {MapContext, MapContextDispatch} from "../MapContext";
 import {ActionType} from "../Reducers/MapReducer";
-import {getElementCenter, snapTo} from "../Helpers/Helpers";
+import {snapTo} from "../Helpers/Helpers";
 import PropertiesTable from "../PropertiesTable/PropertiesTable";
 import PropertyItem from "../PropertiesTable/PropertyItem";
 import PropertiesTableSection from "../PropertiesTable/PropertiesTableSection";
-import {Geometry} from "../MapElements";
-import MapElement from "../MapElement";
+import MapElement from "../MapElement/MapElement";
 import RoomInfo from "../RoomInfo/RoomInfo";
 
 type Props = {
@@ -30,17 +29,16 @@ const MapSVG = ({children}: Props) => {
     const [snap, setSnap] = useState(10)
     const [grid, setGrid] = useState(mapState.editingMode)
     const [dragging, setDragging] = useState(false)
-    const ref = useRef<SVGSVGElement | null>(null);
+    const ref = useRef<SVGSVGElement>(null!);
     const [mousePos, setMousePos] = useState<IPoint>({x: 0, y: 0})
-
     useEffect(() => {
-        const MapSVG: any = ref.current
+        const MapSVG: SVGSVGElement = ref.current
         const resizeObserver = new ResizeObserver(handleResize);
-        if (MapSVG) {
-            setViewBox({x: 0, y: 0, width: MapSVG.clientWidth, height: MapSVG.clientHeight})
-            resizeObserver.observe(MapSVG);
-        }
+        resizeObserver.observe(MapSVG);
+        MapSVG.addEventListener('wheel', (e: WheelEvent) => e.preventDefault())
+        setViewBox({x: 0, y: 0, width: MapSVG.clientWidth, height: MapSVG.clientHeight})
         return () => {
+            MapSVG.removeEventListener('wheel', (e: WheelEvent) => e.preventDefault())
             resizeObserver.disconnect();
         }
     }, []);
@@ -61,7 +59,7 @@ const MapSVG = ({children}: Props) => {
             height: height - dh
         })
     }
-    const handleMouseUp = (e: React.MouseEvent) => {
+    const handleMouseUp = (e: React.MouseEvent<SVGSVGElement>) => {
         if (dragging) {
             let dx = -e.movementX * scale;
             let dy = -e.movementY * scale;
@@ -102,7 +100,6 @@ const MapSVG = ({children}: Props) => {
         setMousePos(clickPos)
         mapState.tool.handleClick(clickPos, mapState, dispatch)
     }
-
     const handleRightClick = (e: any) => {
         e.preventDefault()
         dispatch({type: ActionType.ChangedTemporaryElement, element: null})
@@ -135,17 +132,6 @@ const MapSVG = ({children}: Props) => {
                                 key={mapState.temporaryElement.id}
                                 pointerEvents='none'
                                 strokeWidth={2.5} stroke='red'/>}
-                {mapState.selected?.incidentNodes !== undefined && mapState.editingMode &&
-                    Array.from(mapState.selected?.incidentNodes).map(node => {
-                            const incidentNode = mapState.elements.find(el => el.id === node);
-                            if (incidentNode !== undefined)
-                                return (<MapElement key={`${incidentNode.id}${mapState.selected?.id}`} stroke='lightblue'
-                                                    pointerEvents='none'
-                                                    element={new Geometry([getElementCenter(incidentNode.coordinates), getElementCenter(mapState.selected!.coordinates)])}/>)
-                            return null
-                        }
-                    )
-                }
                 {(grid) && <MapGrid snap={snap} viewBox={viewBox}/>}
             </svg>
             {mapState.editingMode ?
