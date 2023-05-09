@@ -1,19 +1,19 @@
 import React, {useCallback, useContext, useMemo} from "react";
-import {BaseMapElement, MapElementTypes} from "./MapElements";
-import {MapContext, MapContextDispatch} from "./MapContext";
-import {IPoint} from "./Interfaces/Interfaces";
-import {ActionType} from "./Reducers/MapReducer";
-import MapText from "./MapText";
-import {getElementCenter} from "./Helpers/Helpers";
+import {BaseMapElement, MapElementTypes} from "../MapElements";
+import {MapContext, MapContextDispatch} from "../MapContext";
+import {IPoint} from "../Interfaces/Interfaces";
+import {ActionType} from "../Reducers/MapReducer";
+import MapText from "../MapText";
+import {getElementCenter} from "../Helpers/Helpers";
 import StairsIcon from "@mui/icons-material/Stairs";
-import MapIcon from "./MapIcon";
+import MapIcon from "../MapIcon";
 
-type ComponentProps = React.SVGProps<SVGPathElement> & {
+type MapElementProps = React.SVGProps<SVGPathElement> & {
     element: BaseMapElement
     mousePos?: IPoint
 }
 
-const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
+const MapElement = ({element, mousePos, ...props}: MapElementProps) => {
     const context = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     let d = ''
@@ -83,7 +83,7 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
         return (
             <g>
                 <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
-                      stroke={element.color ?? props.stroke}
+                      stroke={element.color ?? (props.stroke ?? 'blue')}
                       onMouseOver={onPathMouseOver}
                       onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
                 {element.name &&
@@ -92,6 +92,14 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
                 {element.type === MapElementTypes.Staircase &&
                     <MapIcon elementCoordinates={elementCenter}><StairsIcon
                         className={'text-black'}/></MapIcon>
+                }
+                {element.incidentNodes && element.id === context.selected?.id &&
+                    element.incidentNodes.map(node =>
+                        <IncidentNode key={node + element.id}
+                                      stroke={'orange'}
+                                      strokeWidth={1.5}
+                                      elementCenter={elementCenter}
+                                      incidentNode={context.elements.find(el => el.id === node)!}/>)
                 }
             </g>
         )
@@ -105,7 +113,6 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
                 {element.name &&
                     <MapText elementCoordinates={elementCenter} text={element.name}/>
                 }
-
             </g>
         )
     if (element.type !== MapElementTypes.Node && element.type !== MapElementTypes.Waypoint)
@@ -113,9 +120,6 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
             <g>
                 <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
                       stroke={element.color ?? props.stroke}/>
-                {element.name &&
-                    <MapText elementCoordinates={elementCenter} text={element.name}/>
-                }
                 {element.type === MapElementTypes.Staircase &&
                     <MapIcon elementCoordinates={elementCenter}><StairsIcon
                         className={'text-black'}/></MapIcon>
@@ -124,4 +128,15 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
         )
     return null
 };
+type IncidentNodeProps = React.SVGProps<SVGPathElement> & {
+    incidentNode: BaseMapElement,
+    elementCenter: IPoint
+}
+const IncidentNode = ({incidentNode, elementCenter, ...props}: IncidentNodeProps) => {
+    const nodeCenter = useMemo(() => getElementCenter(incidentNode.coordinates), [incidentNode.coordinates])
+    return (
+        <path d={`M ${elementCenter.x},${elementCenter.y} L ${nodeCenter.x},${nodeCenter.y}`} {...props} />
+    )
+}
+
 export default MapElement
