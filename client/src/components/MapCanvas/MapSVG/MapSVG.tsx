@@ -9,6 +9,9 @@ import PropertyItem from "../PropertiesTable/PropertyItem";
 import PropertiesTableSection from "../PropertiesTable/PropertiesTableSection";
 import MapElement from "../MapElement/MapElement";
 import RoomInfo from "../RoomInfo/RoomInfo";
+import RoutePlanner from "../RoutePlanner/RoutePlanner";
+import {usePathfinding} from "../Hooks/usePathfinding";
+import MapRoute from "../MapRoute/MapRoute";
 
 type Props = {
     children?: React.ReactNode
@@ -21,7 +24,6 @@ const MapSVG = ({children}: Props) => {
     const refViewBox = useRef<null | IViewBox>(null)
     refViewBox.current = viewBox
 
-
     const [scale, setScale] = useState(1)
     const refScale = useRef(1)
     refScale.current = scale
@@ -31,18 +33,9 @@ const MapSVG = ({children}: Props) => {
     const [dragging, setDragging] = useState(false)
     const ref = useRef<SVGSVGElement>(null!);
     const [mousePos, setMousePos] = useState<IPoint>({x: 0, y: 0})
-    useEffect(() => {
-        const MapSVG: SVGSVGElement = ref.current
-        const resizeObserver = new ResizeObserver(handleResize);
-        resizeObserver.observe(MapSVG);
-        MapSVG.addEventListener('wheel', (e: WheelEvent) => e.preventDefault())
-        setViewBox({x: 0, y: 0, width: MapSVG.clientWidth, height: MapSVG.clientHeight})
-        return () => {
-            MapSVG.removeEventListener('wheel', (e: WheelEvent) => e.preventDefault())
-            resizeObserver.disconnect();
-        }
-    }, []);
 
+    const [routeNodes, setRouteNodes] = useState({start: 0, end: 0})
+    const route = usePathfinding(mapState.elements, routeNodes.start, routeNodes.end)
     const handleWheel = (e: React.WheelEvent) => {
         let rect: SVGSVGElement = ref.current!;
         let width = viewBox.width;
@@ -53,10 +46,7 @@ const MapSVG = ({children}: Props) => {
         let dy = dh * e.nativeEvent.offsetY / rect.clientHeight;
         setScale((width - dw) / rect.clientWidth)
         setViewBox({
-            x: Math.max(viewBox.x + dx, 0),
-            y: Math.max(viewBox.y + dy, 0),
-            width: width - dw,
-            height: height - dh
+            x: Math.max(viewBox.x + dx, 0), y: Math.max(viewBox.y + dy, 0), width: width - dw, height: height - dh
         })
     }
     const handleMouseUp = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -107,12 +97,28 @@ const MapSVG = ({children}: Props) => {
 
     const handleResize = useCallback(() => {
         if (ref.current && refViewBox.current) {
-            setViewBox({...refViewBox.current, width: ref.current.clientWidth * refScale.current, height: ref.current.clientHeight * refScale.current})
+            setViewBox({
+                ...refViewBox.current,
+                width: ref.current.clientWidth * refScale.current,
+                height: ref.current.clientHeight * refScale.current
+            })
         }
     }, [refScale]);
 
+    useEffect(() => {
+        const MapSVG: SVGSVGElement = ref.current
+        const resizeObserver = new ResizeObserver(handleResize);
+        resizeObserver.observe(MapSVG);
+        MapSVG.addEventListener('wheel', (e: WheelEvent) => e.preventDefault())
+        setViewBox({x: 0, y: 0, width: MapSVG.clientWidth, height: MapSVG.clientHeight})
+        return () => {
+            MapSVG.removeEventListener('wheel', (e: WheelEvent) => e.preventDefault())
+            resizeObserver.disconnect();
+        }
+    }, [handleResize]);
+
     return (
-        <div className='w-full flex'>
+        <div className='w-full flex flex-col md:flex-row'>
             <svg viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
                  ref={ref}
                  className={`w-full max-w-4xl relative ${dragging ? ' cursor-all-scroll' : ''}`}
@@ -124,15 +130,17 @@ const MapSVG = ({children}: Props) => {
                  onContextMenu={handleRightClick}
                  onMouseUp={handleMouseUp}
                  onWheel={handleWheel}>
-                {guide.path !== '' && <image href={guide.path} width={guide.width} x={guide.x} y={guide.y} pointerEvents='none'/>}
+                {guide.path !== '' &&
+                    <image href={guide.path} width={guide.width} x={guide.x} y={guide.y} pointerEvents='none'/>}
                 {mapState.elements.map((el) =>
-                    <MapElement element={el} key={el.id} stroke='blue' strokeWidth={2.5} />)}
+                    <MapElement element={el} key={el.id} stroke='blue' strokeWidth={2.5}/>)}
                 {mapState.temporaryElement &&
                     <MapElement element={mapState.temporaryElement} mousePos={mousePos}
                                 key={mapState.temporaryElement.id}
                                 pointerEvents='none'
                                 strokeWidth={2.5} stroke='red'/>}
                 {(grid) && <MapGrid snap={snap} viewBox={viewBox}/>}
+                {route && <MapRoute route={route}/>}
             </svg>
             {mapState.editingMode ?
                 <PropertiesTable>
@@ -217,8 +225,11 @@ const MapSVG = ({children}: Props) => {
                         children
                     }
                 </PropertiesTable> :
-            <RoomInfo />}
-
+                <section className='max-w-xs lg:max-w-md w-full'>
+                    <RoutePlanner setRouteNodes={setRouteNodes}/>
+                    {mapState.selected && <RoomInfo/>}
+                </section>
+            }
         </div>
     )
         ;
