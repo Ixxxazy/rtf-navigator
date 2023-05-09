@@ -38,7 +38,7 @@ const MapCanvas = ({editingAllowed, ...props}: MapCanvasProps) => {
 
     const [mapState, dispatchStateChange] =
         //TODO: Remove placeholder data
-        useReducer(mapReducer, {elements: [], selected: null, tool: new DragTool() as ITool, temporaryElement: null})
+        useReducer(mapReducer, {elements: [], selected: null, tool: new DragTool() as ITool, temporaryElement: null, editingMode: editingAllowed ?? false})
     const mapContext = useMemo(() => (mapState), [mapState])
 
     return (
@@ -46,7 +46,7 @@ const MapCanvas = ({editingAllowed, ...props}: MapCanvasProps) => {
             <MapContextDispatch.Provider value={dispatchStateChange}>
                 <div className={`${props.className} ${editingAllowed && 'flex flex-col'}`}>
                     {(editingAllowed) && <ToolSelector/>}
-                    <MapSVG editingAllowed={editingAllowed!}>{(editingAllowed) && <MapElementProperties/>}</MapSVG>
+                    <MapSVG>{(mapState.editingMode) && <MapElementProperties/>}</MapSVG>
                 </div>
             </MapContextDispatch.Provider>
         </MapContext.Provider>

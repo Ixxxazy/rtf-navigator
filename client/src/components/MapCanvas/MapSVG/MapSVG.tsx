@@ -12,10 +12,9 @@ import MapElement from "../MapElement";
 import RoomInfo from "../RoomInfo/RoomInfo";
 
 type Props = {
-    editingAllowed: boolean,
     children?: React.ReactNode
 }
-const MapSVG = ({editingAllowed, children}: Props) => {
+const MapSVG = ({children}: Props) => {
     const mapState = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     const [viewBox, setViewBox] = useState<IViewBox>({x: 0, y: 0, width: 0, height: 0})
@@ -29,7 +28,7 @@ const MapSVG = ({editingAllowed, children}: Props) => {
     refScale.current = scale
 
     const [snap, setSnap] = useState(10)
-    const [grid, setGrid] = useState(editingAllowed)
+    const [grid, setGrid] = useState(mapState.editingMode)
     const [dragging, setDragging] = useState(false)
     const ref = useRef<SVGSVGElement | null>(null);
     const [mousePos, setMousePos] = useState<IPoint>({x: 0, y: 0})
@@ -130,26 +129,26 @@ const MapSVG = ({editingAllowed, children}: Props) => {
                  onWheel={handleWheel}>
                 {guide.path !== '' && <image href={guide.path} width={guide.width} x={guide.x} y={guide.y} pointerEvents='none'/>}
                 {mapState.elements.map((el) =>
-                    <MapElement element={el} key={el.id} stroke='blue' strokeWidth={2.5} editingAllowed={editingAllowed} />)}
+                    <MapElement element={el} key={el.id} stroke='blue' strokeWidth={2.5} />)}
                 {mapState.temporaryElement &&
                     <MapElement element={mapState.temporaryElement} mousePos={mousePos}
                                 key={mapState.temporaryElement.id}
                                 pointerEvents='none'
-                                strokeWidth={2.5} stroke='red' editingAllowed={editingAllowed}/>}
-                {mapState.selected?.incidentNodes !== undefined && editingAllowed &&
+                                strokeWidth={2.5} stroke='red'/>}
+                {mapState.selected?.incidentNodes !== undefined && mapState.editingMode &&
                     Array.from(mapState.selected?.incidentNodes).map(node => {
                             const incidentNode = mapState.elements.find(el => el.id === node);
                             if (incidentNode !== undefined)
                                 return (<MapElement key={`${incidentNode.id}${mapState.selected?.id}`} stroke='lightblue'
                                                     pointerEvents='none'
-                                                    element={new Geometry([getElementCenter(incidentNode.coordinates), getElementCenter(mapState.selected!.coordinates)])} editingAllowed={editingAllowed}/>)
+                                                    element={new Geometry([getElementCenter(incidentNode.coordinates), getElementCenter(mapState.selected!.coordinates)])}/>)
                             return null
                         }
                     )
                 }
                 {(grid) && <MapGrid snap={snap} viewBox={viewBox}/>}
             </svg>
-            {editingAllowed ?
+            {mapState.editingMode ?
                 <PropertiesTable>
                     <PropertiesTableSection label='General properites' hiddenByDefault={true}>
                         <PropertyItem name={'Elements count'} value={mapState.elements.length}></PropertyItem>

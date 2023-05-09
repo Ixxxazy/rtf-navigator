@@ -11,10 +11,9 @@ import MapIcon from "./MapIcon";
 type ComponentProps = React.SVGProps<SVGPathElement> & {
     element: BaseMapElement
     mousePos?: IPoint
-    editingAllowed: boolean
 }
 
-const MapElement = ({element, mousePos, editingAllowed, ...props}: ComponentProps) => {
+const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
     const context = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     let d = ''
@@ -35,13 +34,13 @@ const MapElement = ({element, mousePos, editingAllowed, ...props}: ComponentProp
     }, [context, dispatch, element]);
     switch (element.type) {
         case MapElementTypes.Door:
-            props.stroke = editingAllowed ? 'green' : 'grey'
-            fill = editingAllowed ? 'green' : 'grey'
+            props.stroke = context.editingMode ? 'green' : 'grey'
+            fill = context.editingMode ? 'green' : 'grey'
             const coordinates: IPoint = mousePos ? mousePos : element.coordinates[1]
             const dx = coordinates.x - element.coordinates[0].x
             const dy = coordinates.y - element.coordinates[0].y
             const sum = Math.abs(dx) + Math.abs(dy)
-            d = editingAllowed ? `
+            d = context.editingMode ? `
             M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')} 
             ${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}
             M ${element.coordinates[0].x},${element.coordinates[0].y} 
@@ -80,7 +79,7 @@ const MapElement = ({element, mousePos, editingAllowed, ...props}: ComponentProp
         default:
             throw Error(`Unknown element type ${element.type}`)
     }
-    if (editingAllowed)
+    if (context.editingMode)
         return (
             <g>
                 <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
