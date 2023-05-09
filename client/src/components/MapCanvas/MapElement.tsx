@@ -11,9 +11,10 @@ import MapIcon from "./MapIcon";
 type ComponentProps = React.SVGProps<SVGPathElement> & {
     element: BaseMapElement
     mousePos?: IPoint
+    editingAllowed: boolean
 }
 
-const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
+const MapElement = ({element, mousePos, editingAllowed, ...props}: ComponentProps) => {
     const context = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     let d = ''
@@ -33,13 +34,13 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
     }, [context, dispatch, element]);
     switch (element.type) {
         case MapElementTypes.Door:
-            props.stroke = 'green'
-            fill = 'green'
+            props.stroke = editingAllowed ? 'green' : 'grey'
+            fill = editingAllowed ? 'green' : 'grey'
             const coordinates: IPoint = mousePos ? mousePos : element.coordinates[1]
             const dx = coordinates.x - element.coordinates[0].x
             const dy = coordinates.y - element.coordinates[0].y
             const sum = Math.abs(dx) + Math.abs(dy)
-            d = `
+            d = editingAllowed ? `
             M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')} 
             ${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}
             M ${element.coordinates[0].x},${element.coordinates[0].y} 
@@ -48,6 +49,7 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
             l ${(-20 * dy / sum)},${(20 * dx / sum)} 
             l ${-dx},${-dy}
             l ${(10 * dy / sum)},${(-10 * dx / sum)}`
+                : `M ${element.coordinates[0].x},${element.coordinates[0].y} l ${dx},${dy}`
             break
         case MapElementTypes.Geometry: {
             d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}`
@@ -67,29 +69,59 @@ const MapElement = ({element, mousePos, ...props}: ComponentProps) => {
         }
         case MapElementTypes.Room: {
             fill = 'blue'
-            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : null}`
+            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}`
             break
         }
         case MapElementTypes.Staircase:
             fill = 'yellow'
-            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : null}`
+            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}`
             break
         default:
             throw Error(`Unknown element type ${element.type}`)
     }
-    return (
-        <g>
-            <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
-                  stroke={element.color ?? props.stroke}
-                  onMouseOver={onPathMouseOver}
-                  onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
-            {element.name &&
-            <MapText elementCoordinates={getElementCenter(element.coordinates)} text={element.name}/>
-            }
-            {element.type === MapElementTypes.Staircase &&
-                <MapIcon elementCoordinates={getElementCenter(element.coordinates)} ><StairsIcon className={'text-black'}/></MapIcon>
-            }
-        </g>
-    )
+    if (editingAllowed)
+        return (
+            <g>
+                <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
+                      stroke={element.color ?? props.stroke}
+                      onMouseOver={onPathMouseOver}
+                      onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
+                {element.name &&
+                    <MapText elementCoordinates={getElementCenter(element.coordinates)} text={element.name}/>
+                }
+                {element.type === MapElementTypes.Staircase &&
+                    <MapIcon elementCoordinates={getElementCenter(element.coordinates)}><StairsIcon
+                        className={'text-black'}/></MapIcon>
+                }
+            </g>
+        )
+    if (element.type === MapElementTypes.Room)
+        return (
+            <g>
+                <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
+                      stroke={element.color ?? props.stroke}
+                      onMouseOver={onPathMouseOver}
+                      onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
+                {element.name &&
+                    <MapText elementCoordinates={getElementCenter(element.coordinates)} text={element.name}/>
+                }
+
+            </g>
+        )
+    if (element.type !== MapElementTypes.Node && element.type !== MapElementTypes.Waypoint)
+        return (
+            <g>
+                <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
+                      stroke={element.color ?? props.stroke}/>
+                {element.name &&
+                    <MapText elementCoordinates={getElementCenter(element.coordinates)} text={element.name}/>
+                }
+                {element.type === MapElementTypes.Staircase &&
+                    <MapIcon elementCoordinates={getElementCenter(element.coordinates)}><StairsIcon
+                        className={'text-black'}/></MapIcon>
+                }
+            </g>
+        )
+    return null
 };
 export default MapElement
