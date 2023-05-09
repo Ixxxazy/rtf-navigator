@@ -7,7 +7,7 @@ import ToolSelector from "./ToolSelector/ToolSelector";
 import {ITool} from "./Interfaces/Interfaces";
 import {DragTool} from "./Tools";
 import {useFetching} from "./Hooks/useFetching";
-import {BaseMapElement, Building, Floor} from "./MapElements";
+import {Building, Floor} from "./MapElements";
 
 //PLACEHOLDER: Remove later
 import placeholderData from './placeholderData.json'
@@ -27,7 +27,6 @@ const MapCanvas = ({editingAllowed, ...props}: MapCanvasProps) => {
     useEffect(() => {
         //fetchBuildingData(1)
         setBuilding(new Building('Building', [new Floor(0, placeholderData as any)]))
-        console.log(building)
     }, [])
 
     //TODO: Remove placeholder data
