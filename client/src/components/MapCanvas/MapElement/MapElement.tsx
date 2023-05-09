@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useMemo} from "react";
+import React, {memo, useCallback, useContext, useMemo} from "react";
 import {BaseMapElement, MapElementTypes} from "../MapElements";
 import {MapContext, MapContextDispatch} from "../MapContext";
 import {IPoint} from "../Interfaces/Interfaces";
@@ -13,7 +13,7 @@ type MapElementProps = React.SVGProps<SVGPathElement> & {
     mousePos?: IPoint
 }
 
-const MapElement = ({element, mousePos, ...props}: MapElementProps) => {
+const MapElement = memo(function MapElement({element, mousePos, ...props}: MapElementProps) {
     const context = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     let d = ''
@@ -36,6 +36,7 @@ const MapElement = ({element, mousePos, ...props}: MapElementProps) => {
         case MapElementTypes.Door:
             props.stroke = context.editingMode ? 'green' : 'grey'
             fill = context.editingMode ? 'green' : 'grey'
+            if (!context.editingMode) props.strokeWidth = 5
             const coordinates: IPoint = mousePos ? mousePos : element.coordinates[1]
             const dx = coordinates.x - element.coordinates[0].x
             const dy = coordinates.y - element.coordinates[0].y
@@ -127,7 +128,7 @@ const MapElement = ({element, mousePos, ...props}: MapElementProps) => {
             </g>
         )
     return null
-};
+})
 type IncidentNodeProps = React.SVGProps<SVGPathElement> & {
     incidentNode: BaseMapElement,
     elementCenter: IPoint
