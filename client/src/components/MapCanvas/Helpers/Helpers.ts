@@ -1,4 +1,5 @@
 import {IPoint} from "../Interfaces/Interfaces";
+import {BaseMapElement} from "../MapElements";
 
 export const snapTo = (x: number, y: number, s: number) => {
     return ({x: Math.round(x / s) * s, y: Math.round(y / s) * s});
@@ -15,15 +16,11 @@ export const shallowEqual = (obj1: any, obj2: any) => {
         );
 }
 export const getElementCenter = (coordinates: IPoint[]): IPoint => {
-    let maxX = Number.MIN_SAFE_INTEGER
-    let maxY = Number.MIN_SAFE_INTEGER
-    let minX = Number.MAX_SAFE_INTEGER
-    let minY = Number.MAX_SAFE_INTEGER
+    let max: IPoint = {x: Number.MIN_SAFE_INTEGER, y: Number.MIN_SAFE_INTEGER}
+    let min: IPoint = {x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER}
     for (const el of coordinates) {
-        maxX = Math.max(el.x, maxX)
-        maxY = Math.max(el.y, maxY)
-        minX = Math.min(el.x, minX)
-        minY = Math.min(el.y, minY)
+        max = {x: Math.max(el.x, max.x), y: Math.max(el.y, max.y)}
+        min = {x: Math.min(el.x, min.x), y: Math.min(el.y, min.y)}
     }
-    return {x: (maxX + minX) / 2, y: (maxY + minY) / 2}
+    return {x: (max.x + min.x) / 2, y: (max.y + min.y) / 2}
 }
