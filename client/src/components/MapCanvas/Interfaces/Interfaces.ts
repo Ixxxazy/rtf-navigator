@@ -8,6 +8,7 @@ export interface IState {
     selected: BaseMapElement | null,
     temporaryElement: BaseMapElement | null
     tool: ITool,
+    editingMode: boolean
 }
 export interface IPoint {
     x: number; y: number
