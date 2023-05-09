@@ -15,6 +15,7 @@ export class BaseMapElement {
     type: MapElementTypes
     incidentNodes?: number[]
     name?: string
+    longName?: string
     description?: string
     workingHours?: string
     staircaseGroup?: number
@@ -69,6 +70,7 @@ export class Room extends BaseMapElement {
         super(MapElementTypes.Room, coordinates);
         this.name = name ? name : '';
         this.incidentNodes = incidentNodes ?? []
+        this.longName = ''
         this.description = ''
         this.workingHours = ''
     }
@@ -92,9 +94,9 @@ export class Floor {
     id: number
     MapElements: BaseMapElement[]
 
-    constructor(floorNumber: number) {
+    constructor(floorNumber: number, elements?: BaseMapElement[]) {
         this.id = Date.now()
-        this.MapElements = []
+        this.MapElements = elements ?? []
         this.floorNumber = floorNumber
     }
 }
