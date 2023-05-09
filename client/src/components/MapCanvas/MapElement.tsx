@@ -1,4 +1,4 @@
-import React, {useCallback, useContext} from "react";
+import React, {useCallback, useContext, useMemo} from "react";
 import {BaseMapElement, MapElementTypes} from "./MapElements";
 import {MapContext, MapContextDispatch} from "./MapContext";
 import {IPoint} from "./Interfaces/Interfaces";
@@ -19,6 +19,7 @@ const MapElement = ({element, mousePos, editingAllowed, ...props}: ComponentProp
     const dispatch = useContext(MapContextDispatch)
     let d = ''
     let fill = mousePos ? 'gray' : 'none'
+    const elementCenter = useMemo(() => getElementCenter(element.coordinates), [element.coordinates])
     const onPathMouseOver = useCallback(() => {
         dispatch({type: ActionType.Changed, element: {id: element.id, color: 'red'}})
     }, [element.id, dispatch]);
@@ -87,10 +88,10 @@ const MapElement = ({element, mousePos, editingAllowed, ...props}: ComponentProp
                       onMouseOver={onPathMouseOver}
                       onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
                 {element.name &&
-                    <MapText elementCoordinates={getElementCenter(element.coordinates)} text={element.name}/>
+                    <MapText elementCoordinates={elementCenter} text={element.name}/>
                 }
                 {element.type === MapElementTypes.Staircase &&
-                    <MapIcon elementCoordinates={getElementCenter(element.coordinates)}><StairsIcon
+                    <MapIcon elementCoordinates={elementCenter}><StairsIcon
                         className={'text-black'}/></MapIcon>
                 }
             </g>
@@ -103,7 +104,7 @@ const MapElement = ({element, mousePos, editingAllowed, ...props}: ComponentProp
                       onMouseOver={onPathMouseOver}
                       onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
                 {element.name &&
-                    <MapText elementCoordinates={getElementCenter(element.coordinates)} text={element.name}/>
+                    <MapText elementCoordinates={elementCenter} text={element.name}/>
                 }
 
             </g>
@@ -114,10 +115,10 @@ const MapElement = ({element, mousePos, editingAllowed, ...props}: ComponentProp
                 <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
                       stroke={element.color ?? props.stroke}/>
                 {element.name &&
-                    <MapText elementCoordinates={getElementCenter(element.coordinates)} text={element.name}/>
+                    <MapText elementCoordinates={elementCenter} text={element.name}/>
                 }
                 {element.type === MapElementTypes.Staircase &&
-                    <MapIcon elementCoordinates={getElementCenter(element.coordinates)}><StairsIcon
+                    <MapIcon elementCoordinates={elementCenter}><StairsIcon
                         className={'text-black'}/></MapIcon>
                 }
             </g>
