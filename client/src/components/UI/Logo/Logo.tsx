@@ -1,8 +1,10 @@
 import React from 'react';
 import logo from './logo.svg'
-const Logo = () => {
+
+type Props = React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>
+const Logo = ({...props}: Props) => {
     return (
-        <img src={logo} alt='Логотип'/>
+        <img src={logo} {...props} alt='Логотип'/>
     );
 };
 
