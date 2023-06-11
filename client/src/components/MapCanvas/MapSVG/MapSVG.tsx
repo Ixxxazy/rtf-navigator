@@ -37,7 +37,7 @@ const MapSVG = ({children}: Props) => {
     const [routeNodes, setRouteNodes] = useState({start: 0, end: 0})
     const route = usePathfinding(mapState.elements, routeNodes.start, routeNodes.end)
     const handleWheel = (e: React.WheelEvent) => {
-        let rect: SVGSVGElement = ref.current!;
+        let rect: SVGSVGElement = ref.current;
         let width = viewBox.width;
         let height = viewBox.height;
         let dw = width * Math.sign(e.deltaY) * -0.05;
@@ -117,12 +117,37 @@ const MapSVG = ({children}: Props) => {
         }
     }, [handleResize]);
 
+
+    //Scale map on load
+    useEffect(() => {
+        if (mapState.elements.length !== 0 && scale === 1) {
+            ScaleMap()
+        }
+    }, [mapState.elements])
+
+    const ScaleMap = () => {
+        let maxPoint: IPoint = {x: 0, y: 0}
+        for (const el of mapState.elements) {
+            for (const point of el.coordinates) {
+                maxPoint = {x: Math.max(maxPoint.x, point.x), y: Math.max(maxPoint.y, point.y)}
+            }
+        }
+        const aspectRatio = ref.current.clientWidth / ref.current.clientHeight
+        let viewBox: IViewBox = {x: 0, y: 0, width: maxPoint.x + 100, height: maxPoint.y + 100}
+        if (aspectRatio < maxPoint.x / maxPoint.y) {
+            viewBox.height = (maxPoint.x + 100) / aspectRatio
+        } else {
+            viewBox.width = (maxPoint.y + 100) * aspectRatio
+        }
+        setViewBox(viewBox)
+        setScale(viewBox.width / ref.current.clientWidth)
+    }
+
     return (
         <div className='w-full flex flex-col md:flex-row'>
             <svg viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
                  ref={ref}
-                 className={`w-full max-w-4xl relative ${dragging ? ' cursor-all-scroll' : ''}`}
-                 style={{aspectRatio: "1.5", minHeight: "70vh"}}
+                 className={`w-full max-w-4xl h-[75vh] max-h-[50vh] md:max-h-full relative ${dragging ? ' cursor-all-scroll' : ''}`}
                  onMouseMove={handleMouseMove}
                  onClick={handleClick}
                  onMouseDown={handleMouseDown}
@@ -133,7 +158,7 @@ const MapSVG = ({children}: Props) => {
                 {guide.path !== '' &&
                     <image href={guide.path} width={guide.width} x={guide.x} y={guide.y} pointerEvents='none'/>}
                 {mapState.elements.map((el) =>
-                    <MapElement element={el} key={el.id} stroke='blue' strokeWidth={2.5}/>)}
+                    <MapElement element={el} key={el.id} stroke='blue'/>)}
                 {mapState.temporaryElement &&
                     <MapElement element={mapState.temporaryElement} mousePos={mousePos}
                                 key={mapState.temporaryElement.id}
@@ -225,9 +250,10 @@ const MapSVG = ({children}: Props) => {
                         children
                     }
                 </PropertiesTable> :
-                <section className='max-w-xs lg:max-w-md w-full'>
-                    <RoutePlanner setRouteNodes={setRouteNodes}/>
+                <section
+                    className='max-w-full md:max-w-xs lg:max-w-md w-full flex flex-col md:flex-col-reverse md:justify-end'>
                     {mapState.selected && <RoomInfo/>}
+                    <RoutePlanner setRouteNodes={setRouteNodes}/>
                 </section>
             }
         </div>
