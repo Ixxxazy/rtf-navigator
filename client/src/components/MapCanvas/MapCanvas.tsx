@@ -43,7 +43,7 @@ const MapCanvas = ({editingAllowed, ...props}: MapCanvasProps) => {
     return (
         <MapContext.Provider value={mapContext}>
             <MapContextDispatch.Provider value={dispatchStateChange}>
-                <div className={`${props.className} ${editingAllowed && 'flex flex-col'}`}>
+                <div className={`${props.className} ${editingAllowed ? 'flex flex-col' : ''}`}>
                     {(editingAllowed) && <ToolSelector/>}
                     <MapSVG>{(mapState.editingMode) && <MapElementProperties/>}</MapSVG>
                 </div>
