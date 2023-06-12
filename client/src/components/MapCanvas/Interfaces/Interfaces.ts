@@ -8,6 +8,7 @@ export interface IState {
     selected: BaseMapElement | null,
     temporaryElement: BaseMapElement | null
     tool: ITool,
+    route: BaseMapElement[],
     editingMode: boolean
 }
 export interface IPoint {
@@ -17,8 +18,15 @@ export interface IViewBox {
     x: number, y: number, width: number, height: number
 }
 export interface ITool {
-    name: string,
-    icon: OverridableComponent<SvgIconTypeMap> & { muiName: string },
-    handleClick: (coordinates: IPoint, context: any, dispatch: Dispatch<any>) => void
-    handleElementClick?: (clickedElement: BaseMapElement, context: any, dispatch: Dispatch<any>) => void;
+    handleClick: (coordinates: IPoint, context: any, dispatch: Dispatch<any>) => void,
+    handleElementClick?: (clickedElement: BaseMapElement, context: any, dispatch: Dispatch<any>) => void,
+    icon: OverridableComponent<SvgIconTypeMap> & { muiName: string }
+    name: string;
+}
+
+export interface IGuide {
+    path: string,
+    x: number,
+    y: number,
+    width: number
 }
