@@ -29,9 +29,15 @@ const MapElementProperties = () => {
                                onChange={(e) =>
                                    dispatch({type: ActionType.Changed, element: {id: element.id, name: e.target.value}})}/>
                     </PropertyItem>}
+                {element.longName !== undefined &&
+                    <PropertyItem name='Long name'>
+                        <input type='text' value={element.longName}
+                               onChange={(e) =>
+                                   dispatch({type: ActionType.Changed, element: {id: element.id, longName: e.target.value}})}/>
+                    </PropertyItem>}
                 {element.description !== undefined &&
                     <PropertyItem name='Description'>
-                        <input type='text' value={element.description}
+                        <textarea value={element.description}
                                onChange={(e) =>
                                    dispatch({type: ActionType.Changed, element: {id: element.id, description: e.target.value}})}/>
                     </PropertyItem>}
