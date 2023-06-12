@@ -19,7 +19,7 @@ const ToolSelector = () => {
         new RoomTool(),
         new StaircaseTool()];
     return (
-        <div className='flex'>
+        <div className='flex flex-wrap'>
             {tools.map((el) =>
                 <Button
                     className={`text-sm ${el.name === context.tool.name && 'bg-green-500 dark:bg-green-500 hover:bg-green-500 dark:hover:bg-green-500'}`}
