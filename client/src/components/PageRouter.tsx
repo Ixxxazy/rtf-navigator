@@ -8,19 +8,24 @@ import About from "../pages/About";
 import Login from "../pages/Login";
 import EditMap from "../pages/Admin/EditMap";
 import Admin from "../pages/Admin/Admin";
+import MapLayout from "./UI/Layout/MapLayout";
 
 const PageRouter = () => {
     return (
         <Routes>
-            <Route path="/" element={<Layout />}>
+            <Route path="/" element={<MapLayout />}>
                 <Route index element={<BuildingMap />} />
+                <Route path="/admin/editMap" element={<EditMap />} />
+            </Route>
+
+            <Route path="/" element={<Layout />}>
                 <Route path="/buildings" element={<Buildings />}/>
                 <Route path="/about" element={<About />}/>
                 <Route path="/login" element={<Login />} />
                 <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/editMap" element={<EditMap />} />
                 <Route path="*" element={<Error />} />
             </Route>
+
         </Routes>
     );
 };
