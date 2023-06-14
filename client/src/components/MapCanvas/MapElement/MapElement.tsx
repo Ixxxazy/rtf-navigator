@@ -1,4 +1,4 @@
-import React, {memo, useCallback, useContext, useMemo} from "react";
+import React, {memo, useCallback, useContext, useMemo, useState} from "react";
 import {BaseMapElement, MapElementTypes} from "../MapElements";
 import {MapContext, MapContextDispatch} from "../MapContext";
 import {IPoint} from "../Interfaces/Interfaces";
@@ -14,17 +14,18 @@ type MapElementProps = React.SVGProps<SVGPathElement> & {
 }
 
 const MapElement = memo(function MapElement({element, mousePos, ...props}: MapElementProps) {
+    const [highlighted, setHighlighted] = useState(mousePos !== undefined)
     const context = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     let d = ''
-    let fill = mousePos ? 'gray' : 'none'
+    let fill ='none'
     const elementCenter = useMemo(() => getElementCenter(element.coordinates), [element.coordinates])
     const onPathMouseOver = useCallback(() => {
-        dispatch({type: ActionType.Changed, element: {id: element.id, color: 'red'}})
-    }, [element.id, dispatch]);
+        setHighlighted(true)
+    }, []);
     const onPathMouseOut = useCallback(() => {
-        dispatch({type: ActionType.Changed, element: {id: element.id, color: null}})
-    }, [element.id, dispatch]);
+        setHighlighted(false)
+    }, []);
     const onPathContextMenu = useCallback(() => {
         dispatch({type: ActionType.Selected, element: element})
     }, [element, dispatch]);
@@ -41,25 +42,25 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
             const dx = coordinates.x - element.coordinates[0].x
             const dy = coordinates.y - element.coordinates[0].y
             const sum = Math.abs(dx) + Math.abs(dy)
-            d = context.editingMode ? `
-            M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')} 
-            ${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}
-            M ${element.coordinates[0].x},${element.coordinates[0].y} 
-            l ${(10 * dy / sum)},${(-10 * dx / sum)}
-            l ${dx},${dy}
-            l ${(-20 * dy / sum)},${(20 * dx / sum)} 
-            l ${-dx},${-dy}
-            l ${(10 * dy / sum)},${(-10 * dx / sum)}`
-                : `M ${element.coordinates[0].x},${element.coordinates[0].y} l ${dx},${dy}`
+            if (context.editingMode)
+                d = `M ${element.coordinates.map(p => toString(p)).join(' L ')} 
+                ${mousePos ? ` L ${toString(mousePos)}` : ''}
+                M ${element.coordinates[0].x},${element.coordinates[0].y} 
+                l ${(10 * dy / sum)},${(-10 * dx / sum)}
+                l ${dx},${dy}
+                l ${(-20 * dy / sum)},${(20 * dx / sum)} 
+                l ${-dx},${-dy}
+                l ${(10 * dy / sum)},${(-10 * dx / sum)}`
+            else d = `M ${toString(element.coordinates[0])} l ${dx},${dy}`
             break
         case MapElementTypes.Geometry: {
-            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}`
+            d = toPath([...element.coordinates, mousePos])
             break
         }
         case MapElementTypes.Node: {
             fill = 'red'
             let coordinates = element.coordinates[0]
-            d = `M ${coordinates.x},${coordinates.y} m 5,0 v 5 h -10 v -10 h 10 v 5`
+            d = `M ${toString(coordinates)} m 5,0 v 5 h -10 v -10 h 10 v 5`
             break
         }
         case MapElementTypes.Waypoint: {
@@ -70,12 +71,12 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
         }
         case MapElementTypes.Room: {
             fill = 'blue'
-            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}`
+            d = toPath([...element.coordinates, mousePos])
             break
         }
         case MapElementTypes.Staircase:
             fill = 'yellow'
-            d = `M ${element.coordinates.map(p => `${p.x},${p.y}`).join(' L ')}${mousePos ? ` L ${mousePos.x},${mousePos.y}` : ''}`
+            d = toPath([...element.coordinates, mousePos])
             break
         default:
             throw Error(`Unknown element type ${element.type}`)
@@ -83,8 +84,9 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
     if (context.editingMode)
         return (
             <g>
-                <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
-                      stroke={element.color ?? (props.stroke ?? 'blue')}
+                <path data-id={element.id} d={d} fill={highlighted ? 'lightBlue' : fill} fillOpacity="50%" {...props}
+                      stroke={highlighted ? 'red' : 'blue'}
+                      strokeWidth={3}
                       onMouseOver={onPathMouseOver}
                       onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
                 {element.name &&
@@ -107,7 +109,7 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
     if (element.type === MapElementTypes.Room)
         return (
             <g>
-                <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
+                <path data-id={element.id} d={d} fill={highlighted ? 'lightBlue' : 'blue'} fillOpacity="50%" {...props}
                       stroke={element.color ?? props.stroke}
                       onMouseOver={onPathMouseOver}
                       onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
@@ -136,8 +138,17 @@ type IncidentNodeProps = React.SVGProps<SVGPathElement> & {
 const IncidentNode = ({incidentNode, elementCenter, ...props}: IncidentNodeProps) => {
     const nodeCenter = useMemo(() => getElementCenter(incidentNode.coordinates), [incidentNode.coordinates])
     return (
-        <path d={`M ${elementCenter.x},${elementCenter.y} L ${nodeCenter.x},${nodeCenter.y}`} {...props} />
+        <path d={toPath([elementCenter, nodeCenter])} {...props} />
     )
+}
+
+const toPath = (points: (IPoint | undefined)[]): string => {
+    return `M ${points.map(p => toString(p)).join(' L ')}`
+}
+const toString = (point: IPoint | undefined): string => {
+    if (point !== undefined) //for mousePos, which can be undefined
+        return `${point.x},${point.y}`
+    return ''
 }
 
 export default MapElement
