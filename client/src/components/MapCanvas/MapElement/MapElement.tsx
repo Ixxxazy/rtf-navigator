@@ -110,7 +110,7 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
         return (
             <g>
                 <path data-id={element.id} d={d} fill={highlighted ? 'lightBlue' : 'blue'} fillOpacity="50%" {...props}
-                      stroke={element.color ?? props.stroke}
+                      stroke={props.stroke}
                       onMouseOver={onPathMouseOver}
                       onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
                 {element.name &&
@@ -122,7 +122,7 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
         return (
             <g>
                 <path data-id={element.id} d={d} fill={fill} fillOpacity="50%" {...props}
-                      stroke={element.color ?? props.stroke}/>
+                      stroke={props.stroke}/>
                 {element.type === MapElementTypes.Staircase &&
                     <MapIcon elementCoordinates={elementCenter}><StairsIcon
                         className={'text-black'}/></MapIcon>

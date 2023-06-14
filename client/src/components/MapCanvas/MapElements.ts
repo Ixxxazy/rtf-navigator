@@ -11,15 +11,14 @@ export enum MapElementTypes {
 
 export class BaseMapElement {
     id: number
-    coordinates: IPoint[]
     type: MapElementTypes
+    coordinates: IPoint[]
     incidentNodes?: number[]
     name?: string
     longName?: string
     description?: string
     workingHours?: string
     staircaseGroup?: number
-    color?: string
     constructor(type: MapElementTypes, coordinates: IPoint[]) {
         this.coordinates = coordinates
         this.id = Date.now()
