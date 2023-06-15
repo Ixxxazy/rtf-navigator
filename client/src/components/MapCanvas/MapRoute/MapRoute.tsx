@@ -10,9 +10,9 @@ const MapRoute = () => {
     let route = usePathfinding(context.elements, context.route)
     if (route) {
         route = route.filter(el => el.type !== MapElementTypes.Room)
-        const d = `M ${route.map(routeEl => getElementCenter(routeEl.coordinates)).map(p => `${p.x},${p.y}`).join(' L ')}`
+        const d = `M ${route.map(routeEl => getElementCenter(routeEl.coordinates)).map(p => p.x + ',' + p.y).join(' L ')}`
         return (
-            <path d={d} stroke='blue' strokeWidth={5} fill='none'/>
+            <path d={d} stroke='blue' strokeWidth={10} fill='none'/>
         );
     }
     return null
