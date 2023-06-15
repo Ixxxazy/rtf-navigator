@@ -4,6 +4,7 @@ import {BaseMapElement} from "../MapElements";
 type Action = {
     type: ActionType,
     element?: BaseMapElement,
+    route?: {start: number, end: number} | null,
     tool?: ITool
 }
 
@@ -13,12 +14,15 @@ export enum ActionType {
     Deleted = 'DELETED',
     Selected = 'SELECTED',
     SelectedTool = 'SELECTED_TOOL',
+    RouteSet = 'ROUTE_SET',
     ChangedTemporaryElement = 'CHANGED_TMP'
 }
 
 export default function mapReducer(mapState: IState, action: Action): IState {
     if (action.tool && action.type === ActionType.SelectedTool)
         return {...mapState, tool: action.tool}
+    if (action.route !== undefined && action.type === ActionType.RouteSet)
+        return {...mapState, route: action.route}
     else if (action.element !== undefined) {
         switch (action.type) {
             case ActionType.Added: {
