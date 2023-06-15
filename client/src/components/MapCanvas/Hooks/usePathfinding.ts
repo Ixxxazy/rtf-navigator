@@ -26,7 +26,7 @@ export const usePathfinding = (graph: BaseMapElement[], route: {start: number, e
             result.push(pathItem);
             pathItem = track[pathItem.id];
         }
-        return result;
+        return result.reverse();
         //TODO: fix dependencies
     }, [route])
 }
