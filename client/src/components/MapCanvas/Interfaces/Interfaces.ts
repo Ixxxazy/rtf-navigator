@@ -8,7 +8,7 @@ export interface IState {
     selected: BaseMapElement | null,
     temporaryElement: BaseMapElement | null
     tool: ITool,
-    route: BaseMapElement[],
+    route: {start: number, end: number} | null,
     editingMode: boolean
 }
 export interface IPoint {
