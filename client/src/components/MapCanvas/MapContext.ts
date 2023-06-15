@@ -3,6 +3,7 @@ import {IState, ITool} from "./Interfaces/Interfaces";
 
 export const MapContext = createContext<IState>({
     elements: [],
+    route: null,
     selected: null,
     tool: {} as ITool,
     temporaryElement: null,
