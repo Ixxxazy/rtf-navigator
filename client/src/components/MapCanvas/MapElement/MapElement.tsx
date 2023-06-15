@@ -30,8 +30,10 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
         dispatch({type: ActionType.Selected, element: element})
     }, [element, dispatch]);
     const onPathClick = useCallback(() => {
-        if (context.tool.handleElementClick)
+        if (context.tool.handleElementClick && context.editingMode)
             context.tool.handleElementClick(element, context, dispatch)
+        else
+            dispatch({type: ActionType.Selected, element: element})
     }, [context, dispatch, element]);
     switch (element.type) {
         case MapElementTypes.Door:
@@ -70,7 +72,7 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
             break
         }
         case MapElementTypes.Room: {
-            fill = 'blue'
+            fill = 'dodgerblue'
             d = toPath([...element.coordinates, mousePos])
             break
         }
@@ -109,7 +111,7 @@ const MapElement = memo(function MapElement({element, mousePos, ...props}: MapEl
     if (element.type === MapElementTypes.Room)
         return (
             <g>
-                <path data-id={element.id} d={d} fill={highlighted ? 'lightBlue' : 'blue'} fillOpacity="50%" {...props}
+                <path data-id={element.id} d={d} fill={highlighted ? 'lightBlue' : fill} fillOpacity="50%" {...props}
                       stroke={props.stroke}
                       onMouseOver={onPathMouseOver}
                       onMouseOut={onPathMouseOut} onContextMenu={onPathContextMenu} onClick={onPathClick}/>
