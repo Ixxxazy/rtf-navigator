@@ -8,15 +8,13 @@ import PropertiesTable from "../PropertiesTable/PropertiesTable";
 import PropertyItem from "../PropertiesTable/PropertyItem";
 import PropertiesTableSection from "../PropertiesTable/PropertiesTableSection";
 import MapElement from "../MapElement/MapElement";
-import RoomInfo from "../RoomInfo/RoomInfo";
-import RoutePlanner from "../RoutePlanner/RoutePlanner";
-import {usePathfinding} from "../Hooks/usePathfinding";
 import MapRoute from "../MapRoute/MapRoute";
+import ToolSelector from "../ToolSelector/ToolSelector";
+import MapElementProperties from "../PropertiesTable/MapElementProperties";
+import ZoomControl from "../ZoomControl/ZoomControl";
+import Guide from "../Guide/Guide";
 
-type Props = {
-    children?: React.ReactNode
-}
-const MapSVG = ({children}: Props) => {
+const MapSVG = () => {
     const mapState = useContext(MapContext)
     const dispatch = useContext(MapContextDispatch)
     const [viewBox, setViewBox] = useState<IViewBox>({x: 0, y: 0, width: 0, height: 0})
@@ -34,8 +32,6 @@ const MapSVG = ({children}: Props) => {
     const ref = useRef<SVGSVGElement>(null!);
     const [mousePos, setMousePos] = useState<IPoint>({x: 0, y: 0})
 
-    const [routeNodes, setRouteNodes] = useState({start: 0, end: 0})
-    const route = usePathfinding(mapState.elements, routeNodes.start, routeNodes.end)
     const handleWheel = (e: React.WheelEvent) => {
         let rect: SVGSVGElement = ref.current;
         let width = viewBox.width;
@@ -45,20 +41,10 @@ const MapSVG = ({children}: Props) => {
         let dx = dw * e.nativeEvent.offsetX / rect.clientWidth;
         let dy = dh * e.nativeEvent.offsetY / rect.clientHeight;
         setScale((width - dw) / rect.clientWidth)
-        setViewBox({
-            x: Math.max(viewBox.x + dx, 0), y: Math.max(viewBox.y + dy, 0), width: width - dw, height: height - dh
-        })
+        setViewBox({x: viewBox.x + dx, y: viewBox.y + dy, width: width - dw, height: height - dh})
     }
     const handleMouseUp = (e: React.MouseEvent<SVGSVGElement>) => {
-        if (dragging) {
-            let dx = -e.movementX * scale;
-            let dy = -e.movementY * scale;
-            setViewBox({
-                ...viewBox,
-                x: Math.max(viewBox.x + dx, 0),
-                y: Math.max(viewBox.y + dy, 0)
-            })
-        }
+        handleMouseMove(e)
         setDragging(false);
     }
     const handleMouseLeave = () => {
@@ -73,11 +59,7 @@ const MapSVG = ({children}: Props) => {
         if (dragging) {
             let dx = -e.movementX * scale;
             let dy = -e.movementY * scale;
-            setViewBox({
-                ...viewBox,
-                x: Math.max(viewBox.x + dx, 0),
-                y: Math.max(viewBox.y + dy, 0)
-            })
+            setViewBox({...viewBox, x: viewBox.x + dx, y: viewBox.y + dy})
         }
         const localX = (e.clientX - e.currentTarget.getBoundingClientRect().x);
         const localY = (e.clientY - e.currentTarget.getBoundingClientRect().y);
@@ -126,28 +108,46 @@ const MapSVG = ({children}: Props) => {
     }, [mapState.elements])
 
     const ScaleMap = () => {
-        let maxPoint: IPoint = {x: 0, y: 0}
+        let maxPoint: IPoint = {x: Number.MIN_SAFE_INTEGER, y: Number.MIN_SAFE_INTEGER}
+        let boundingBox: IViewBox =
+            {x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER, width: 0, height: 0}
         for (const el of mapState.elements) {
             for (const point of el.coordinates) {
                 maxPoint = {x: Math.max(maxPoint.x, point.x), y: Math.max(maxPoint.y, point.y)}
+                boundingBox = {...boundingBox, x: Math.min(boundingBox.x, point.x), y: Math.min(boundingBox.y, point.y)}
             }
         }
+        boundingBox = {...boundingBox, width: maxPoint.x - boundingBox.x, height: maxPoint.y - boundingBox.y}
         const aspectRatio = ref.current.clientWidth / ref.current.clientHeight
         let viewBox: IViewBox = {x: 0, y: 0, width: maxPoint.x + 100, height: maxPoint.y + 100}
         if (aspectRatio < maxPoint.x / maxPoint.y) {
             viewBox.height = (maxPoint.x + 100) / aspectRatio
+            viewBox.y = -(viewBox.height - boundingBox.height) / 2
         } else {
             viewBox.width = (maxPoint.y + 100) * aspectRatio
+            viewBox.x = -(viewBox.width - boundingBox.width) / 2
         }
         setViewBox(viewBox)
         setScale(viewBox.width / ref.current.clientWidth)
     }
-
+    const resizeMap = (factor: number) => {
+        /*const aspectRatio = viewBox.width / viewBox.height
+        //TODO
+        setViewBox({
+            ...viewBox,
+            x: viewBox.x + factor * aspectRatio,
+            y: viewBox.y + factor * (1 / aspectRatio),
+            width: viewBox.width - factor * aspectRatio,
+            height: viewBox.height - factor * (1 / aspectRatio)
+        })
+        setScale((viewBox.width - factor) / ref.current.clientWidth)*/
+    }
     return (
-        <div className='w-full flex flex-col md:flex-row'>
+        <section className='w-full flex flex-col md:flex-row'>
+            <ZoomControl resize={resizeMap} />
             <svg viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
                  ref={ref}
-                 className={`w-full max-w-4xl h-[75vh] max-h-[50vh] md:max-h-full relative ${dragging ? ' cursor-all-scroll' : ''}`}
+                 className={`w-full h-full ${dragging ? ' cursor-all-scroll' : ''}`}
                  onMouseMove={handleMouseMove}
                  onClick={handleClick}
                  onMouseDown={handleMouseDown}
@@ -155,8 +155,7 @@ const MapSVG = ({children}: Props) => {
                  onContextMenu={handleRightClick}
                  onMouseUp={handleMouseUp}
                  onWheel={handleWheel}>
-                {guide.path !== '' &&
-                    <image href={guide.path} width={guide.width} x={guide.x} y={guide.y} pointerEvents='none'/>}
+                <Guide guide={guide} />
                 {mapState.elements.map((el) =>
                     <MapElement element={el} key={el.id} stroke='blue'/>)}
                 {mapState.temporaryElement &&
@@ -165,100 +164,95 @@ const MapSVG = ({children}: Props) => {
                                 pointerEvents='none'
                                 strokeWidth={2.5} stroke='red'/>}
                 {(grid) && <MapGrid snap={snap} viewBox={viewBox}/>}
-                {route && <MapRoute route={route}/>}
+                {mapState.route ? <MapRoute/> : null}
             </svg>
-            {mapState.editingMode ?
-                <PropertiesTable>
-                    <PropertiesTableSection label='General properites' hiddenByDefault={true}>
-                        <PropertyItem name={'Elements count'} value={mapState.elements.length}></PropertyItem>
-                        <PropertyItem name={'Selected tool'} value={mapState.tool.name}/>
-                        <PropertyItem name='Scale' value={scale}/>
-                        <PropertyItem name={'Grid'}>
-                            <input type='checkbox' checked={grid} onChange={e => setGrid(e.target.checked)}/>
-                            <input type='number' value={snap}
-                                   onChange={e => setSnap(parseInt(e.target.value))}/>
-                        </PropertyItem>
-                        <PropertyItem name='Offset'>
-                            <input type='number' className='w-20' value={viewBox.x} step={1} min={0}
-                                   onChange={e => setViewBox({
-                                       ...viewBox,
-                                       x: parseFloat(e.target.value)
-                                   })}/>
-                            <input type='number' className='w-20' value={viewBox.y} step={1} min={0}
-                                   onChange={e => setViewBox({
-                                       ...viewBox,
-                                       y: parseFloat(e.target.value)
-                                   })}/>
-                        </PropertyItem>
-                        <tr>
-                            <td colSpan={2}>
-                                <button type='button' onClick={() => console.log(mapState.elements)}>Dump
-                                    elements
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>
-                                <button type='button'
-                                        onClick={() => console.log(JSON.stringify(mapState.elements))}>Dump JSON
-                                </button>
-                            </td>
-                        </tr>
-                        <PropertyItem name={'Import JSON'}><input onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                for (const el in mapState.elements) {
-                                    dispatch({type: ActionType.Deleted, element: el})
-                                }
-                                for (const el of JSON.parse(e.currentTarget.value)) {
-                                    dispatch({type: ActionType.Added, element: el})
+            {mapState.editingMode &&
+                <div className='flex flex-col w-96'>
+                    <ToolSelector/>
+                    <PropertiesTable>
+                        <PropertiesTableSection label='General properites' hiddenByDefault={true}>
+                            <PropertyItem name={'Elements count'} value={mapState.elements.length}></PropertyItem>
+                            <PropertyItem name={'Selected tool'} value={mapState.tool.name}/>
+                            <PropertyItem name='Scale' value={scale}/>
+                            <PropertyItem name={'Grid'}>
+                                <input type='checkbox' checked={grid} onChange={e => setGrid(e.target.checked)}/>
+                                <input type='number' value={snap}
+                                       onChange={e => setSnap(parseInt(e.target.value))}/>
+                            </PropertyItem>
+                            <PropertyItem name='Offset'>
+                                <input type='number' className='w-20' value={viewBox.x} step={1} min={0}
+                                       onChange={e => setViewBox({
+                                           ...viewBox,
+                                           x: parseFloat(e.target.value)
+                                       })}/>
+                                <input type='number' className='w-20' value={viewBox.y} step={1} min={0}
+                                       onChange={e => setViewBox({
+                                           ...viewBox,
+                                           y: parseFloat(e.target.value)
+                                       })}/>
+                            </PropertyItem>
+                            <tr>
+                                <td colSpan={2}>
+                                    <button type='button' onClick={() => console.log(mapState.elements)}>Dump
+                                        elements
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan={2}>
+                                    <button type='button'
+                                            onClick={() => console.log(JSON.stringify(mapState.elements))}>Dump JSON
+                                    </button>
+                                </td>
+                            </tr>
+                            <PropertyItem name={'Import JSON'}><input onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    for (const el in mapState.elements) {
+                                        dispatch({type: ActionType.Deleted, element: el})
+                                    }
+                                    for (const el of JSON.parse(e.currentTarget.value)) {
+                                        dispatch({type: ActionType.Added, element: el})
+                                    }
                                 }
                             }
-                        }
-                        }/></PropertyItem>
-                    </PropertiesTableSection>
-                    <PropertiesTableSection label='Guide' hiddenByDefault={true}>
-                        <PropertyItem name='Guide'>
-                            <input value='' type="file" onChange={(e) => {
-                                const img = new Image()
-                                img.onload = () => {
-                                    setGuide({...guide, width: img.width, path: img.src})
-                                }
-                                img.src = URL.createObjectURL(e.target.files![0])
-                            }}/>
-                        </PropertyItem>
-                        <PropertyItem name='Offset'>
-                            <input type='number' className='w-20' value={guide.x} step={1} min={0}
-                                   onChange={e => setGuide({
-                                       ...guide,
-                                       x: parseFloat(e.target.value)
-                                   })}/>
-                            <input type='number' className='w-20' value={guide.y} step={1} min={0}
-                                   onChange={e => setGuide({
-                                       ...guide,
-                                       y: parseFloat(e.target.value)
-                                   })}/>
-                        </PropertyItem>
-                        <PropertyItem name='Width'>
-                            <input type='number' className='w-40' value={guide.width} step={1} min={0}
-                                   onChange={e => setGuide({
-                                       ...guide,
-                                       width: parseFloat(e.target.value)
-                                   })}/>
-                        </PropertyItem>
-                    </PropertiesTableSection>
-                    {
-                        children
-                    }
-                </PropertiesTable> :
-                <section
-                    className='max-w-full md:max-w-xs lg:max-w-md w-full flex flex-col md:flex-col-reverse md:justify-end'>
-                    {mapState.selected && <RoomInfo/>}
-                    <RoutePlanner setRouteNodes={setRouteNodes}/>
-                </section>
+                            }/></PropertyItem>
+                        </PropertiesTableSection>
+                        <PropertiesTableSection label='Guide' hiddenByDefault={true}>
+                            <PropertyItem name='Guide'>
+                                <input value='' type="file" onChange={(e) => {
+                                    const img = new Image()
+                                    img.onload = () => {
+                                        setGuide({...guide, width: img.width, path: img.src})
+                                    }
+                                    img.src = URL.createObjectURL(e.target.files![0])
+                                }}/>
+                            </PropertyItem>
+                            <PropertyItem name='Offset'>
+                                <input type='number' className='w-20' value={guide.x} step={1} min={0}
+                                       onChange={e => setGuide({
+                                           ...guide,
+                                           x: parseFloat(e.target.value)
+                                       })}/>
+                                <input type='number' className='w-20' value={guide.y} step={1} min={0}
+                                       onChange={e => setGuide({
+                                           ...guide,
+                                           y: parseFloat(e.target.value)
+                                       })}/>
+                            </PropertyItem>
+                            <PropertyItem name='Width'>
+                                <input type='number' className='w-40' value={guide.width} step={1} min={0}
+                                       onChange={e => setGuide({
+                                           ...guide,
+                                           width: parseFloat(e.target.value)
+                                       })}/>
+                            </PropertyItem>
+                        </PropertiesTableSection>
+                        <MapElementProperties/>
+                    </PropertiesTable>
+                </div>
             }
-        </div>
-    )
-        ;
+        </section>
+    );
 };
 
 export default MapSVG;

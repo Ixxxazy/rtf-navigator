@@ -1,16 +1,21 @@
-import React from 'react';
-import {BaseMapElement, MapElementTypes} from "../MapElements";
+import React, {useContext} from 'react';
+import {MapElementTypes} from "../MapElements";
 import {getElementCenter} from "../Helpers/Helpers";
+import {usePathfinding} from "../Hooks/usePathfinding";
+import {MapContext} from "../MapContext";
 
-type Props = {
-    route: BaseMapElement[]
-}
-const MapRoute = ({route}: Props) => {
-    route = route.filter(el => el.type !== MapElementTypes.Room)
-    const d = `M ${route.map(routeEl => getElementCenter(routeEl.coordinates)).map(p => `${p.x},${p.y}`).join(' L ')}`
-    return (
-        <path d={d} stroke='blue' strokeWidth={5} fill='none'/>
-    );
+
+const MapRoute = () => {
+    const context = useContext(MapContext)
+    let route = usePathfinding(context.elements, context.route)
+    if (route) {
+        route = route.filter(el => el.type !== MapElementTypes.Room)
+        const d = `M ${route.map(routeEl => getElementCenter(routeEl.coordinates)).map(p => `${p.x},${p.y}`).join(' L ')}`
+        return (
+            <path d={d} stroke='blue' strokeWidth={5} fill='none'/>
+        );
+    }
+    return null
 };
 
 export default MapRoute;

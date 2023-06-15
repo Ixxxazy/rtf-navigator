@@ -1,9 +1,7 @@
 import React, {useEffect, useMemo, useReducer, useState} from 'react';
-import MapElementProperties from "./PropertiesTable/MapElementProperties";
 import mapReducer from "./Reducers/MapReducer";
 import {MapContext, MapContextDispatch} from "./MapContext";
 import MapSVG from "./MapSVG/MapSVG";
-import ToolSelector from "./ToolSelector/ToolSelector";
 import {ITool} from "./Interfaces/Interfaces";
 import {DragTool} from "./Tools";
 import {useFetching} from "./Hooks/useFetching";
@@ -11,6 +9,7 @@ import {Building, Floor} from "./MapElements";
 
 //PLACEHOLDER: Remove later
 import placeholderData from './placeholderData.json'
+import MapMenu from "./MapMenu/MapMenu";
 
 type MapCanvasProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {
     editingAllowed?: boolean
@@ -37,16 +36,21 @@ const MapCanvas = ({editingAllowed, ...props}: MapCanvasProps) => {
 
     const [mapState, dispatchStateChange] =
         //TODO: Remove placeholder data
-        useReducer(mapReducer, {elements: [], selected: null, tool: new DragTool() as ITool, temporaryElement: null, editingMode: editingAllowed ?? false})
+        useReducer(mapReducer, {
+            elements: [],
+            selected: null,
+            tool: new DragTool() as ITool,
+            temporaryElement: null,
+            editingMode: editingAllowed ?? false,
+            route: null
+        })
     const mapContext = useMemo(() => (mapState), [mapState])
 
     return (
         <MapContext.Provider value={mapContext}>
             <MapContextDispatch.Provider value={dispatchStateChange}>
-                <div className={`${props.className} ${editingAllowed ? 'flex flex-col' : ''}`}>
-                    {(editingAllowed) && <ToolSelector/>}
-                    <MapSVG>{(mapState.editingMode) && <MapElementProperties/>}</MapSVG>
-                </div>
+                <MapMenu/>
+                <MapSVG/>
             </MapContextDispatch.Provider>
         </MapContext.Provider>
     );
