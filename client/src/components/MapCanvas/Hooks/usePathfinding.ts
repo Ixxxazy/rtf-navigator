@@ -1,33 +1,34 @@
 import {BaseMapElement} from "../MapElements";
 import {useMemo} from "react";
 
-export const usePathfinding = (graph: BaseMapElement[], startNodeId: number, endNodeId: number) => {
+export const usePathfinding = (graph: BaseMapElement[], route: {start: number, end: number} | null) => {
     return useMemo(() => {
-        if (startNodeId === 0 || endNodeId === 0)
-            return []
+        if (!route)
+            return null
         let track: { [index: string]: BaseMapElement } = {};
         let queue = []
-        queue.push(startNodeId);
+        queue.push(route.start);
         while (queue.length !== 0) {
             const node = getElementById(queue.shift()!, graph);
-            for (let i = 0; i < node.incidentNodes!.length; i++) {
-                const nextNode = node.incidentNodes![i]
+            if (node === undefined) throw new Error('Node not found!')
+            for (const element of node.incidentNodes!) {
+                const nextNode = element
                 if (!(nextNode in track)) {
                     track[nextNode.toString()] = node
                 }
                 queue.push(nextNode);
             }
-            if (endNodeId in track) break;
+            if (route.end in track) break;
         }
-        let pathItem = getElementById(endNodeId, graph);
+        let pathItem = getElementById(route.end, graph);
         let result = []
-        while (pathItem.id !== startNodeId) {
+        while (pathItem.id !== route?.start) {
             result.push(pathItem);
             pathItem = track[pathItem.id];
         }
         return result;
         //TODO: fix dependencies
-    }, [startNodeId, endNodeId])
+    }, [route])
 }
 const getElementById = (id: number, graph: BaseMapElement[]) => {
     return graph.find(el => el.id === id) as BaseMapElement
