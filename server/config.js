@@ -1,3 +1,4 @@
 module.exports = {
-    secret: "SECRET_KEY_RANDOM"
+    MONGODB_CONNSTRING: process.env.MONGODB_CONNSTRING,
+    secret: process.env.SECRET
 }
